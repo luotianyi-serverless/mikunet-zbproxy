@@ -1,7 +1,7 @@
 NAME=ZBProxy
 BINDIR=bin
 VERSION=$(shell git rev-parse --short HEAD || echo "unknown version")
-GOBUILD=go build -v -trimpath -ldflags '-X "github.com/layou233/ZBProxy/version.CommitHash=$(VERSION)" \
+GOBUILD=go build -v -trimpath -ldflags '-X "github.com/layou233/zbproxy/v3/version.CommitHash=$(VERSION)" \
 		-s -w -buildid='
 
 PLATFORM_LIST = \

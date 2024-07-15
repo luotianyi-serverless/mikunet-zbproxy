@@ -7,7 +7,8 @@ After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/ZBProxy
+WorkingDirectory=/usr/local/etc/zbproxy
+ExecStart=/usr/local/bin/zbproxy
 ExecReload=/bin/kill -s HUP $MAINPID
 KillSignal=SIGTERM
 Restart=on-failure

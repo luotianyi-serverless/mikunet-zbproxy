@@ -6,7 +6,7 @@ import (
 	"math"
 	"net"
 
-	"github.com/layou233/ZBProxy/common/buf"
+	"github.com/layou233/zbproxy/v3/common/buf"
 )
 
 type Conn struct {
@@ -63,7 +63,7 @@ func (c Conn) WritePacket(buffer *buf.Buffer) (err error) {
 // WriteVectorizedPacket appends the sum of length of packets to the buffer head,
 // and writes all the packets to Conn. Then reset the buffer to MaxVarIntLen.
 // This function would attempt to write packets using writev syscall to optimize
-// performance, if the platform is available.
+// performance if available.
 // Note that the given buffer should have at least 5 bytes front headroom space.
 func (c Conn) WriteVectorizedPacket(buffer *buf.Buffer, packets ...[]byte) (err error) {
 	totalLength := buffer.Len()

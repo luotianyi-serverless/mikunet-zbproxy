@@ -4,8 +4,8 @@ import (
 	"errors"
 	"io"
 
-	"github.com/layou233/ZBProxy/common/buf"
-	"github.com/layou233/ZBProxy/common/rw"
+	"github.com/layou233/zbproxy/v3/common/buf"
+	"github.com/layou233/zbproxy/v3/common/rw"
 )
 
 const MaxVarIntLen = 5

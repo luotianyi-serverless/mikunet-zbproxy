@@ -99,7 +99,7 @@ jobs:
       run: echo "git_hash=$(git rev-parse --short HEAD || echo "unknown version")" >> $GITHUB_OUTPUT
 
     - name: Build
-      run: go build -v -trimpath -ldflags '-X "github.com/layou233/ZBProxy/version.CommitHash=${{ steps.hash.outputs.git_hash }}" -s -w -buildid=' -o ZBProxy-${{ matrix.goos }}-${{ matrix.goarch }}-${{ matrix.goarm }}${{ matrix.goamd64 }}
+      run: go build -v -trimpath -ldflags '-X "github.com/layou233/zbproxy/v3/version.CommitHash=${{ steps.hash.outputs.git_hash }}" -s -w -buildid=' -o ZBProxy-${{ matrix.goos }}-${{ matrix.goarch }}-${{ matrix.goarm }}${{ matrix.goamd64 }}
 
     - name: Handle for Windows Build
       if: ${{ env.GOOS == 'windows' }}

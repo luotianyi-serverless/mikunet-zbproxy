@@ -2,8 +2,10 @@ package mcprotocol
 
 import (
 	"encoding/binary"
+	"errors"
+	"math"
 
-	"github.com/layou233/ZBProxy/common/buf"
+	"github.com/layou233/zbproxy/v3/common/buf"
 )
 
 const (
@@ -79,9 +81,19 @@ func ReadUint64(buffer *buf.Buffer) (uint64, error) {
 }
 
 func ReadString(buffer *buf.Buffer) (string, error) {
+	return ReadLimitedString(buffer, math.MaxInt32)
+}
+
+func ReadLimitedString(buffer *buf.Buffer, limit int32) (string, error) {
 	n, _, err := ReadVarIntFrom(buffer)
 	if err != nil {
 		return "", err
+	}
+	if n > limit {
+		return "", errors.New("limit exceeded")
+	}
+	if n <= 0 {
+		return "", errors.New("bad string length: zero or negative")
 	}
 	bytes, err := buffer.Peek(int(n))
 	if err != nil {
@@ -91,21 +103,35 @@ func ReadString(buffer *buf.Buffer) (string, error) {
 	return string(bytes), nil
 }
 
+func WriteBoolean(buffer *buf.Buffer, b bool) error {
+	if b {
+		return buffer.WriteByte(BooleanTrue)
+	} else {
+		return buffer.WriteZero()
+	}
+}
+
+func WriteBytes(buffer *buf.Buffer, b []byte) error {
+	VarInt(len(b)).WriteToBuffer(buffer)
+	_, err := buffer.Write(b)
+	return err
+}
+
+func WriteString(buffer *buf.Buffer, s string) error {
+	VarInt(len(s)).WriteToBuffer(buffer)
+	_, err := buffer.WriteString(s)
+	return err
+}
+
 func WriteToPacket(buffer *buf.Buffer, item ...any) (err error) {
 	for _, raw := range item {
 		switch i := raw.(type) {
 		case bool:
-			if i {
-				err = buffer.WriteByte(BooleanTrue)
-			} else {
-				err = buffer.WriteZero()
-			}
+			err = WriteBoolean(buffer, i)
 		case []byte:
-			VarInt(len(i)).WriteToBuffer(buffer)
-			_, err = buffer.Write(i)
+			err = WriteBytes(buffer, i)
 		case string:
-			VarInt(len(i)).WriteToBuffer(buffer)
-			_, err = buffer.WriteString(i)
+			err = WriteString(buffer, i)
 		case int8:
 			err = buffer.WriteByte(byte(i))
 		case uint8: // aka byte

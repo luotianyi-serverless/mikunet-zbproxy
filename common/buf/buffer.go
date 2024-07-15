@@ -13,6 +13,10 @@ type Buffer struct {
 	closed  bool
 }
 
+func New() *Buffer {
+	return NewSize(8 * 1024)
+}
+
 func NewSize(size int) *Buffer {
 	if size > 65535 {
 		return &Buffer{
@@ -291,6 +295,10 @@ func (b *Buffer) FreeBytes() []byte {
 
 func (b *Buffer) Rewind(start int) {
 	b.start = start
+}
+
+func (b *Buffer) CurrentPosition() int {
+	return b.start
 }
 
 func (b *Buffer) IsEmpty() bool {

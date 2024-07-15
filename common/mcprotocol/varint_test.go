@@ -5,7 +5,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/layou233/ZBProxy/common/buf"
+	"github.com/layou233/zbproxy/v3/common/buf"
 )
 
 // samples from https://wiki.vg/Protocol#VarInt_and_VarLong

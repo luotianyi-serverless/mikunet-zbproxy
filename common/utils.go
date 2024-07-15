@@ -7,6 +7,13 @@ func Must[T any](s T, err error) T {
 	return s
 }
 
+func MustOK[T any](s T, ok bool) T {
+	if ok {
+		return s
+	}
+	panic("assertion failed")
+}
+
 func Must0(err error) {
 	if err != nil {
 		panic(err)

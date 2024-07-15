@@ -6,7 +6,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/layou233/ZBProxy/common/buf"
+	"github.com/layou233/zbproxy/v3/common/buf"
 )
 
 // Modified from https://github.com/Tnze/go-mc/blob/master/chat/message.go
