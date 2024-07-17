@@ -84,6 +84,10 @@ func (r *Router) HandleConnection(conn net.Conn, metadata *adapter.Metadata) {
 		if match {
 			r.logger.Trace().Str("id", metadata.ConnectionID).Int("rule_index", i).Msg("Rule matched")
 			ruleConfig := rule.Config()
+			// handle sniff
+			if len(ruleConfig.Sniff) > 0 {
+				protocol.Sniff(r.logger, cachedConn, metadata, r.snifferRegistry, ruleConfig.Sniff...)
+			}
 			// handle rewrite
 			if ruleConfig.Rewrite.TargetAddress != "" {
 				metadata.DestinationHostname = ruleConfig.Rewrite.TargetAddress
@@ -102,10 +106,6 @@ func (r *Router) HandleConnection(conn net.Conn, metadata *adapter.Metadata) {
 						metadata.Minecraft.RewrittenPort = ruleConfig.Rewrite.Minecraft.Port
 					}
 				}
-			}
-			// handle sniff
-			if len(ruleConfig.Sniff) > 0 {
-				protocol.Sniff(r.logger, cachedConn, metadata, r.snifferRegistry, ruleConfig.Sniff...)
 			}
 			// handle outbound
 			if ruleConfig.Outbound != "" {
