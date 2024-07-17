@@ -8,6 +8,7 @@ import (
 
 	"github.com/layou233/zbproxy/v3/adapter"
 	"github.com/layou233/zbproxy/v3/common"
+	"github.com/layou233/zbproxy/v3/common/jsonx"
 	"github.com/layou233/zbproxy/v3/common/set"
 	"github.com/layou233/zbproxy/v3/config"
 
@@ -22,7 +23,7 @@ type RuleSourceIP struct {
 var _ Rule = (*RuleSourceIP)(nil)
 
 func NewSourceIPRule(newConfig *config.Rule, listMap map[string]set.StringSet) (*RuleSourceIP, error) {
-	var cidrList config.Listable[string]
+	var cidrList jsonx.Listable[string]
 	err := json.Unmarshal(newConfig.Parameter, &cidrList)
 	if err != nil {
 		return nil, fmt.Errorf("bad IP CIDR list [%v]: %w", newConfig.Parameter, err)

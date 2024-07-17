@@ -7,6 +7,7 @@ import (
 	"net/netip"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/layou233/zbproxy/v3/adapter"
 	"github.com/layou233/zbproxy/v3/common"
@@ -128,7 +129,7 @@ func (s *Service) Start(ctx context.Context) error {
 		Control: network.NewListenerControlFromOptions(s.config.SocketOptions),
 	}
 	if s.config.SocketOptions != nil {
-		listenConfig.KeepAlive = s.config.SocketOptions.KeepAlivePeriod
+		listenConfig.KeepAlive = time.Duration(s.config.SocketOptions.KeepAlivePeriod)
 		if s.config.SocketOptions.MultiPathTCP {
 			network.SetListenerMultiPathTCP(listenConfig, true)
 		}

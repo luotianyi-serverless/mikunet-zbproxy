@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/layou233/zbproxy/v3/adapter"
+	"github.com/layou233/zbproxy/v3/common/jsonx"
 	"github.com/layou233/zbproxy/v3/common/set"
 	"github.com/layou233/zbproxy/v3/config"
 )
@@ -18,7 +19,7 @@ type RuleMinecraftPlayerName struct {
 var _ Rule = (*RuleMinecraftPlayerName)(nil)
 
 func NewMinecraftPlayerNameRule(newConfig *config.Rule, listMap map[string]set.StringSet) (Rule, error) {
-	var playerList config.Listable[string]
+	var playerList jsonx.Listable[string]
 	err := json.Unmarshal(newConfig.Parameter, &playerList)
 	if err != nil {
 		return nil, fmt.Errorf("bad player name list %v: %w", newConfig.Parameter, err)

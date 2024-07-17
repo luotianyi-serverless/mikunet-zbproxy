@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 	"syscall"
+	"time"
 )
 
 var SystemDialer Dialer = &systemOutbound{}
@@ -15,7 +16,8 @@ func NewSystemDialer(options *OutboundSocketOptions) Dialer {
 
 	out := &systemOutbound{
 		Dialer: net.Dialer{
-			Control: NewDialerControlFromOptions(options),
+			Control:   NewDialerControlFromOptions(options),
+			KeepAlive: time.Duration(options.KeepAlivePeriod),
 		},
 	}
 	if options.MultiPathTCP {
