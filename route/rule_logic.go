@@ -7,6 +7,8 @@ import (
 	"github.com/layou233/zbproxy/v3/common"
 	"github.com/layou233/zbproxy/v3/common/set"
 	"github.com/layou233/zbproxy/v3/config"
+
+	"github.com/phuslu/log"
 )
 
 type ruleLogic struct {
@@ -14,7 +16,7 @@ type ruleLogic struct {
 	config *config.Rule
 }
 
-func newLogicalRule(newConfig *config.Rule, listMap map[string]set.StringSet, ruleRegistry map[string]CustomRuleInitializer) (ruleLogic, error) {
+func newLogicalRule(logger *log.Logger, newConfig *config.Rule, listMap map[string]set.StringSet, ruleRegistry map[string]CustomRuleInitializer) (ruleLogic, error) {
 	var ruleConfig []config.Rule
 	err := json.Unmarshal(newConfig.Parameter, &ruleConfig)
 	if err != nil {
@@ -23,7 +25,7 @@ func newLogicalRule(newConfig *config.Rule, listMap map[string]set.StringSet, ru
 	rules := make([]Rule, 0, len(ruleConfig))
 	for i := range ruleConfig {
 		var newRule Rule
-		newRule, err = NewRule(&ruleConfig[i], listMap, ruleRegistry)
+		newRule, err = NewRule(logger, &ruleConfig[i], listMap, ruleRegistry)
 		if err != nil {
 			return ruleLogic{}, common.Cause("initialize rule in logic rule parameter: ", err)
 		}
@@ -45,8 +47,8 @@ type RuleLogicalAnd struct {
 
 var _ Rule = (*RuleLogicalAnd)(nil)
 
-func NewLogicalAndRule(newConfig *config.Rule, listMap map[string]set.StringSet, ruleRegistry map[string]CustomRuleInitializer) (Rule, error) {
-	logicRule, err := newLogicalRule(newConfig, listMap, ruleRegistry)
+func NewLogicalAndRule(logger *log.Logger, newConfig *config.Rule, listMap map[string]set.StringSet, ruleRegistry map[string]CustomRuleInitializer) (Rule, error) {
+	logicRule, err := newLogicalRule(logger, newConfig, listMap, ruleRegistry)
 	if err != nil {
 		return nil, err
 	}
@@ -73,8 +75,8 @@ type RuleLogicalOr struct {
 
 var _ Rule = (*RuleLogicalOr)(nil)
 
-func NewLogicalOrRule(newConfig *config.Rule, listMap map[string]set.StringSet, ruleRegistry map[string]CustomRuleInitializer) (Rule, error) {
-	logicRule, err := newLogicalRule(newConfig, listMap, ruleRegistry)
+func NewLogicalOrRule(logger *log.Logger, newConfig *config.Rule, listMap map[string]set.StringSet, ruleRegistry map[string]CustomRuleInitializer) (Rule, error) {
+	logicRule, err := newLogicalRule(logger, newConfig, listMap, ruleRegistry)
 	if err != nil {
 		return nil, err
 	}

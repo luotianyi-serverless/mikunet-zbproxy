@@ -53,7 +53,7 @@ func (r *Router) Initialize(ctx context.Context, logger *log.Logger, options Rou
 	r.snifferRegistry = options.SnifferRegistry
 	r.rules = make([]Rule, 0, len(options.Config.Rules))
 	for i, ruleConfig := range options.Config.Rules {
-		rule, err := NewRule(ruleConfig, r.listMap, r.ruleRegistry)
+		rule, err := NewRule(logger, ruleConfig, r.listMap, r.ruleRegistry)
 		if err != nil {
 			return fmt.Errorf("initialize rule [index=%d]: %w", i, err)
 		}

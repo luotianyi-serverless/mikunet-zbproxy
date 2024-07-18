@@ -9,6 +9,8 @@ import (
 	"github.com/layou233/zbproxy/v3/common"
 	"github.com/layou233/zbproxy/v3/common/set"
 	"github.com/layou233/zbproxy/v3/config"
+
+	"github.com/phuslu/log"
 )
 
 const (
@@ -23,14 +25,14 @@ type Rule interface {
 	Match(metadata *adapter.Metadata) bool
 }
 
-func NewRule(config *config.Rule, listMap map[string]set.StringSet, ruleRegistry map[string]CustomRuleInitializer) (Rule, error) {
+func NewRule(logger *log.Logger, config *config.Rule, listMap map[string]set.StringSet, ruleRegistry map[string]CustomRuleInitializer) (Rule, error) {
 	switch config.Type {
 	case "always":
 		return &RuleAlways{config}, nil
 	case "and":
-		return NewLogicalAndRule(config, listMap, ruleRegistry)
+		return NewLogicalAndRule(logger, config, listMap, ruleRegistry)
 	case "or":
-		return NewLogicalOrRule(config, listMap, ruleRegistry)
+		return NewLogicalOrRule(logger, config, listMap, ruleRegistry)
 	case "SourceIPVersion":
 		return NewSourceIPVersionRule(config)
 	case "SourceIP":
@@ -46,7 +48,7 @@ func NewRule(config *config.Rule, listMap map[string]set.StringSet, ruleRegistry
 		if !found {
 			return nil, fmt.Errorf("unknown custom rule type: %s", typeName)
 		}
-		return ruleInitializer(config, listMap)
+		return ruleInitializer(logger, config, listMap)
 	}
 	return nil, common.Cause("type ["+config.Type+"]: ", ErrRuleTypeNotFound)
 }

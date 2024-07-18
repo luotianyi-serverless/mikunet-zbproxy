@@ -15,7 +15,7 @@ const (
 	SniffTypeTLS       = "tls"
 )
 
-type SnifferFunc = func(conn bufio.PeekConn, metadata *adapter.Metadata) error
+type SnifferFunc = func(logger *log.Logger, conn bufio.PeekConn, metadata *adapter.Metadata) error
 
 func Sniff(logger *log.Logger, conn bufio.PeekConn, metadata *adapter.Metadata, registry map[string]SnifferFunc, protocols ...string) {
 	startPosition := conn.CurrentPosition()
@@ -46,7 +46,7 @@ func Sniff(logger *log.Logger, conn bufio.PeekConn, metadata *adapter.Metadata, 
 		default:
 			if sniffAll {
 				for _, snifferFunc := range registry {
-					err = snifferFunc(conn, metadata)
+					err = snifferFunc(logger, conn, metadata)
 					if err != nil {
 						logger.Trace().Str("protocol", protocol).Err(err).Msg("sniff error")
 					}
@@ -54,7 +54,7 @@ func Sniff(logger *log.Logger, conn bufio.PeekConn, metadata *adapter.Metadata, 
 				return
 			} else if len(registry) > 0 {
 				if snifferFunc := registry[protocol]; snifferFunc != nil {
-					err = snifferFunc(conn, metadata)
+					err = snifferFunc(logger, conn, metadata)
 					if err != nil {
 						logger.Trace().Str("protocol", protocol).Err(err).Msg("sniff error")
 					}
