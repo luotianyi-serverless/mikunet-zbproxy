@@ -52,12 +52,14 @@ func Sniff(logger *log.Logger, conn bufio.PeekConn, metadata *adapter.Metadata, 
 					}
 				}
 				return
-			} else if registry != nil {
+			} else if len(registry) > 0 {
 				if snifferFunc := registry[protocol]; snifferFunc != nil {
 					err = snifferFunc(conn, metadata)
 					if err != nil {
 						logger.Trace().Str("protocol", protocol).Err(err).Msg("sniff error")
 					}
+				} else {
+					logger.Fatal().Str("protocol", protocol).Msg("unsupported protocol")
 				}
 			} else {
 				logger.Fatal().Str("protocol", protocol).Msg("unsupported protocol")

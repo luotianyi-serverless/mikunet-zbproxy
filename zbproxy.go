@@ -16,19 +16,23 @@ import (
 )
 
 type Options struct {
-	Config         *config.Root
-	LogWriter      log.Writer
-	ConfigFilePath string
-	DisableReload  bool
+	Config          *config.Root
+	LogWriter       log.Writer
+	ConfigFilePath  string
+	RuleRegistry    map[string]route.CustomRuleInitializer
+	SnifferRegistry map[string]protocol.SnifferFunc
+	DisableReload   bool
 }
 
 type Instance struct {
-	ctx         context.Context
-	logger      *log.Logger
-	config      *config.Root
-	router      *route.Router
-	serviceMap  map[string]adapter.Service
-	outboundMap map[string]adapter.Outbound
+	ctx             context.Context
+	logger          *log.Logger
+	config          *config.Root
+	router          *route.Router
+	serviceMap      map[string]adapter.Service
+	outboundMap     map[string]adapter.Outbound
+	ruleRegistry    map[string]route.CustomRuleInitializer
+	snifferRegistry map[string]protocol.SnifferFunc
 }
 
 func NewInstance(ctx context.Context, options Options) (*Instance, error) {
@@ -38,7 +42,9 @@ func NewInstance(ctx context.Context, options Options) (*Instance, error) {
 			TimeFormat: "15:04:05",
 			Writer:     options.LogWriter,
 		},
-		config: options.Config,
+		config:          options.Config,
+		ruleRegistry:    options.RuleRegistry,
+		snifferRegistry: options.SnifferRegistry,
 	}
 	if options.LogWriter == nil {
 		instance.logger.Writer = &log.ConsoleWriter{
@@ -96,9 +102,11 @@ func (i *Instance) Start() error {
 	// initialize router
 	i.router = &route.Router{}
 	err = i.router.Initialize(i.ctx, i.logger, route.RouterOptions{
-		Config:      &i.config.Router,
-		OutboundMap: outboundMap,
-		ListMap:     i.config.Lists,
+		Config:          &i.config.Router,
+		OutboundMap:     outboundMap,
+		ListMap:         i.config.Lists,
+		RuleRegistry:    i.ruleRegistry,
+		SnifferRegistry: i.snifferRegistry,
 	})
 	if err != nil {
 		return common.Cause("initialize router: ", err)
@@ -153,9 +161,11 @@ func (i *Instance) UpdateConfig() {
 
 	// update router
 	err := i.router.UpdateConfig(route.RouterOptions{
-		Config:      &i.config.Router,
-		OutboundMap: newOutboundMap,
-		ListMap:     i.config.Lists,
+		Config:          &i.config.Router,
+		OutboundMap:     newOutboundMap,
+		ListMap:         i.config.Lists,
+		RuleRegistry:    i.ruleRegistry,
+		SnifferRegistry: i.snifferRegistry,
 	})
 	if err != nil {
 		i.logger.Error().Err(err).Msg("Error when updating router")
