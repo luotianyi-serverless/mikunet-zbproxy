@@ -2,7 +2,10 @@ package domain
 
 import "math/bits"
 
-const prefixLabel = '\r'
+const (
+	prefixLabel = '\r'
+	rootLabel   = '\n'
+)
 
 // modified from https://github.com/openacid/succinct
 
@@ -52,6 +55,13 @@ func (ss *succinctSet) Has(key string) bool {
 			if nextLabel == prefixLabel {
 				return true
 			}
+			if nextLabel == rootLabel {
+				nextNodeId := countZeros(ss.labelBitmap, ss.ranks, bmIdx+1)
+				hasNext := getBit(ss.leaves, nextNodeId) != 0
+				if currentChar == '.' && hasNext {
+					return true
+				}
+			}
 			if nextLabel == currentChar {
 				break
 			}
@@ -66,7 +76,8 @@ func (ss *succinctSet) Has(key string) bool {
 		if getBit(ss.labelBitmap, bmIdx) != 0 {
 			return false
 		}
-		if ss.labels[bmIdx-nodeId] == prefixLabel {
+		nextLabel := ss.labels[bmIdx-nodeId]
+		if nextLabel == prefixLabel || nextLabel == rootLabel {
 			return true
 		}
 	}

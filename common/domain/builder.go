@@ -22,8 +22,7 @@ func (b *MatcherBuilder) AddDomainSuffix(domain string) {
 	if domain[0] == '.' {
 		b.domainList = append(b.domainList, reverseDomainSuffix(domain))
 	} else {
-		b.domainList = append(b.domainList, reverseDomain(domain))
-		b.domainList = append(b.domainList, reverseRootDomainSuffix(domain))
+		b.domainList = append(b.domainList, reverseDomainRoot(domain))
 	}
 }
 
