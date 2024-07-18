@@ -4,10 +4,9 @@ import "github.com/layou233/zbproxy/v3/common/network"
 
 type Service struct {
 	Name          string
-	TargetAddress string
-	TargetPort    uint16
+	TargetAddress string `json:",omitempty"`
+	TargetPort    uint16 `json:",omitempty"`
 	Listen        uint16
-	Flow          string
 
 	IPAccess      access                        `json:",omitempty"`
 	Minecraft     *MinecraftService             `json:",omitempty"`

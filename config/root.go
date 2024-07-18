@@ -3,6 +3,9 @@ package config
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"github.com/layou233/zbproxy/v3/common"
+	"github.com/layou233/zbproxy/v3/common/jsonx"
 	"os"
 	"time"
 
@@ -129,7 +132,60 @@ func LoadConfigFromFile(ctx context.Context, filePath string, watch bool, logger
 	var rawConfig _Root
 	err := loadContent(&rawConfig, filePath)
 	if err != nil {
-		return nil, err
+		if errors.Is(err, os.ErrNotExist) {
+			logger.Warn().Msg("Config file does not exist, generating a new one...")
+			rawConfig = _Root{
+				Log: Log{
+					Level: log.DebugLevel,
+				},
+				Services: []*Service{
+					{
+						Name:   "Hypixel-in",
+						Listen: 25565,
+					},
+				},
+				Router: Router{
+					Rules: []*Rule{
+						{
+							Type:  "always",
+							Sniff: jsonx.Listable[string]{"minecraft"},
+						},
+					},
+					DefaultOutbound: "Hypixel-out",
+				},
+				Outbounds: []*Outbound{
+					{
+						Name:          "Hypixel-out",
+						TargetAddress: "mc.hypixel.net",
+						TargetPort:    25565,
+						Minecraft: &MinecraftService{
+							EnableHostnameRewrite: true,
+							OnlineCount: onlineCount{
+								Max:    20,
+								Online: -1,
+							},
+							MotdFavicon:     "{DEFAULT_MOTD}",
+							MotdDescription: "§d{NAME}§e, provided by §a§o{INFO}§r\n§c§lProxy for §6§n{HOST}:{PORT}§r",
+						},
+					},
+				},
+				Lists: map[string]set.StringSet{},
+			}
+			var file *os.File
+			file, err = os.Create("ZBProxy.json")
+			if err != nil {
+				return nil, common.Cause("create config file: ", err)
+			}
+			encoder := json.NewEncoder(file)
+			encoder.SetEscapeHTML(false)
+			encoder.SetIndent("", "    ")
+			err = encoder.Encode(&rawConfig)
+			if err != nil {
+				return nil, common.Cause("generate config: ", err)
+			}
+		} else {
+			return nil, common.Cause("load config: ", err)
+		}
 	}
 	root := &Root{
 		Log:       rawConfig.Log,

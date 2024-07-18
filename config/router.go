@@ -9,7 +9,7 @@ type Router struct {
 
 type Rule struct {
 	Type      string
-	Parameter jsonx.RawJSON
+	Parameter jsonx.RawJSON `json:",omitempty"`
 	//SubRules []Rule `json:",omitempty"`
 	Rewrite  RuleRewrite            `json:",omitempty"`
 	Sniff    jsonx.Listable[string] `json:",omitempty"`

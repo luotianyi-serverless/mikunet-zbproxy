@@ -10,6 +10,9 @@ var (
 )
 
 func (r RawJSON) MarshalJSON() ([]byte, error) {
+	if r == nil {
+		return []byte("null"), nil
+	}
 	return r, nil
 }
 
