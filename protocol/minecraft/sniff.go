@@ -2,6 +2,7 @@ package minecraft
 
 import (
 	"errors"
+	"io"
 	"time"
 
 	"github.com/layou233/zbproxy/v3/adapter"
@@ -85,6 +86,7 @@ func SniffClientHandshake(conn bufio.PeekConn, metadata *adapter.Metadata) error
 	}
 	metadata.Minecraft.NextState = int8(nextState)
 
+	metadata.Minecraft.SniffPosition = conn.CurrentPosition()
 	if nextState == mcprotocol.NextStateStatus {
 		// status packet
 		conn.SetReadDeadline(time.Now().Add(10 * time.Second))
@@ -98,9 +100,6 @@ func SniffClientHandshake(conn bufio.PeekConn, metadata *adapter.Metadata) error
 		packetSize, _, err = mcprotocol.ReadVarIntFrom(conn)
 		if err != nil {
 			return common.Cause("read packet size: ", err)
-		}
-		if packetSize > 33 { // maximum possible size of this kind of packet
-			return ErrBadPacket
 		}
 		conn.SetReadDeadline(time.Now().Add(10 * time.Second))
 		packetContent, err = conn.Peek(int(packetSize))
@@ -120,11 +119,52 @@ func SniffClientHandshake(conn bufio.PeekConn, metadata *adapter.Metadata) error
 		if err != nil {
 			return common.Cause("read player name: ", err)
 		}
-		if buffer.Len() == 16 { // UUID exists
-			copy(metadata.Minecraft.UUID[:], buffer.Bytes())
+		if metadata.Minecraft.ProtocolVersion >= 764 { // 1.20.2
+			if buffer.Len() == 16 { // UUID exists
+				copy(metadata.Minecraft.UUID[:], buffer.Bytes())
+			}
+		} else if metadata.Minecraft.ProtocolVersion >= 761 { // 1.19.3
+			var hasUUID byte
+			hasUUID, err = buffer.ReadByte()
+			if err != nil {
+				return common.Cause("read has UUID: ", err)
+			}
+			if hasUUID == mcprotocol.BooleanTrue {
+				copy(metadata.Minecraft.UUID[:], buffer.Bytes())
+			}
+		} else if metadata.Minecraft.ProtocolVersion >= 759 { // 1.19
+			var hasSigData byte
+			hasSigData, err = buffer.ReadByte()
+			if err != nil {
+				return common.Cause("read has sig data: ", err)
+			}
+			if hasSigData == mcprotocol.BooleanTrue {
+				// skip timestamp
+				buffer.Advance(8) // size of Long
+				var length int32
+				// skip public key
+				length, _, err = mcprotocol.ReadVarIntFrom(buffer)
+				if err != nil {
+					return common.Cause("read public key length: ", err)
+				}
+				buffer.Advance(int(length))
+				// skip signature
+				length, _, err = mcprotocol.ReadVarIntFrom(buffer)
+				if err != nil {
+					return common.Cause("read signature length: ", err)
+				}
+				buffer.Advance(int(length))
+			}
+			var hasUUID byte
+			hasUUID, err = buffer.ReadByte()
+			if err != nil && err != io.EOF {
+				return common.Cause("read has UUID: ", err)
+			}
+			if hasUUID == mcprotocol.BooleanTrue {
+				copy(metadata.Minecraft.UUID[:], buffer.Bytes())
+			}
 		}
 	}
 
-	metadata.Minecraft.SniffPosition = conn.CurrentPosition()
 	return nil
 }

@@ -27,6 +27,10 @@ func NewCachedConn(c net.Conn) *CachedConn {
 	}
 }
 
+func (c *CachedConn) Cache() *buf.Buffer {
+	return c.cache
+}
+
 func (c *CachedConn) Read(p []byte) (n int, err error) {
 	if c.cache != nil && !c.cache.IsEmpty() {
 		return c.cache.Read(p)

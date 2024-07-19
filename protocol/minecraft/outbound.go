@@ -201,9 +201,15 @@ func (o *Outbound) InjectConnection(ctx context.Context, conn *bufio.CachedConn,
 	}
 	switch metadata.Minecraft.NextState {
 	case mcprotocol.NextStateStatus:
+		// skip Status Request packet
+		_, err := conn.Peek(2)
+		if err != nil {
+			return common.Cause("skip status request: ", err)
+		}
 		if o.config.Minecraft.MotdFavicon == "" && o.config.Minecraft.MotdDescription == "" {
 			// directly proxy MOTD from server
-			remoteConn, err := o.connectServer(ctx, metadata)
+			var remoteConn net.Conn
+			remoteConn, err = o.connectServer(ctx, metadata)
 			if err != nil {
 				return common.Cause("request remote MOTD: ", err)
 			}
@@ -261,7 +267,7 @@ func (o *Outbound) InjectConnection(ctx context.Context, conn *bufio.CachedConn,
 				Writer: common.UnwrapWriter(conn), // unwrap to make writev syscall possible
 				Conn:   conn,
 			}
-			err := clientMC.WriteVectorizedPacket(buffer, motd)
+			err = clientMC.WriteVectorizedPacket(buffer, motd)
 			if err != nil {
 				return common.Cause("respond MOTD: ", err)
 			}
@@ -366,26 +372,16 @@ func (o *Outbound) InjectConnection(ctx context.Context, conn *bufio.CachedConn,
 		binary.BigEndian.PutUint16(buffer.Extend(2), port)
 		buffer.WriteByte(mcprotocol.NextStateLogin)
 		mcprotocol.AppendPacketLength(buffer, buffer.Len())
-		// construct login packet
-		loginPacketSize := 2 + len(metadata.Minecraft.PlayerName) // should not exceed 127
-		hasUUID := false
-		if metadata.Minecraft.UUID != [16]byte{} { // is not empty
-			loginPacketSize += 16
-			hasUUID = true
-		}
-		buffer.WriteByte(byte(loginPacketSize))
-		buffer.WriteByte(0) // Server bound : Login Start
-		buffer.WriteByte(byte(len(metadata.Minecraft.PlayerName)))
-		buffer.WriteString(metadata.Minecraft.PlayerName)
-		if hasUUID {
-			buffer.Write(metadata.Minecraft.UUID[:])
-		}
-		_, err = serverConn.Write(buffer.Bytes())
+		// write handshake and login packet
+		cache := conn.Cache()
+		vector := net.Buffers{buffer.Bytes(), cache.Bytes()}
+		_, err = vector.WriteTo(serverConn)
 		buffer.Release()
 		if err != nil {
 			serverConn.Close()
 			return common.Cause("server handshake: ", err)
 		}
+		cache.Advance(cache.Len()) // all written
 		o.logger.Info().Str("id", metadata.ConnectionID).Str("outbound", o.config.Name).
 			Str("player", metadata.Minecraft.PlayerName).Msg("Created Minecraft connection")
 		o.onlineCount.Add(1)
