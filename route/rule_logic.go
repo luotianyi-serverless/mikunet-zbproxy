@@ -55,7 +55,7 @@ func NewLogicalAndRule(logger *log.Logger, newConfig *config.Rule, listMap map[s
 	return &RuleLogicalAnd{logicRule}, nil
 }
 
-func (r RuleLogicalAnd) Match(metadata *adapter.Metadata) (match bool) {
+func (r *RuleLogicalAnd) Match(metadata *adapter.Metadata) (match bool) {
 	match = true
 	for _, rule := range r.rules {
 		if !rule.Match(metadata) {
@@ -83,7 +83,7 @@ func NewLogicalOrRule(logger *log.Logger, newConfig *config.Rule, listMap map[st
 	return &RuleLogicalOr{logicRule}, nil
 }
 
-func (r RuleLogicalOr) Match(metadata *adapter.Metadata) (match bool) {
+func (r *RuleLogicalOr) Match(metadata *adapter.Metadata) (match bool) {
 	for _, rule := range r.rules {
 		if rule.Match(metadata) {
 			match = true

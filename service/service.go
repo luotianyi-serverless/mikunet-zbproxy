@@ -59,11 +59,13 @@ func (s *Service) listenLoop() {
 			s.logger.Warn().Str("service", s.config.Name).Str("ip", ipString).Msg("Rejected by access control")
 			continue
 		}
-		metadata := &adapter.Metadata{}
+		metadata := &adapter.Metadata{
+			ServiceName:         s.config.Name,
+			DestinationHostname: s.config.TargetAddress,
+			DestinationPort:     s.config.TargetPort,
+			SourceIP:            common.MustOK(netip.AddrFromSlice(ip)).Unmap(),
+		}
 		metadata.GenerateID()
-		metadata.DestinationHostname = s.config.TargetAddress
-		metadata.DestinationPort = s.config.TargetPort
-		metadata.SourceIP = common.MustOK(netip.AddrFromSlice(ip)).Unmap()
 		s.logger.Info().Str("id", metadata.ConnectionID).Str("service", s.config.Name).
 			Str("ip", ipString).Msg("New inbound connection")
 		if s.legacyOutbound != nil {

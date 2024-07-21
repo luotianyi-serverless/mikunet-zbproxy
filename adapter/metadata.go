@@ -19,6 +19,7 @@ type Protocol = uint8
 
 type Metadata struct {
 	ConnectionID        string
+	ServiceName         string
 	SniffedProtocol     Protocol
 	SourceIP            netip.Addr
 	DestinationHostname string
@@ -30,7 +31,7 @@ type Metadata struct {
 
 func (m *Metadata) GenerateID() {
 	id := int64(fastrand.Int31())
-	idColor := fastrand.Intn(len(color.List))
+	idColor := fastrand.Int31n(int32(len(color.List)))
 	m.ConnectionID = color.Apply(color.List[idColor], "["+strconv.FormatInt(id, 10)+"]")
 }
 

@@ -11,23 +11,23 @@ import (
 	"github.com/layou233/zbproxy/v3/config"
 )
 
-type RuleMinecraftPlayerName struct {
+type RuleServiceName struct {
 	sets   []set.StringSet
 	config *config.Rule
 }
 
-var _ Rule = (*RuleMinecraftPlayerName)(nil)
+var _ Rule = (*RuleServiceName)(nil)
 
-func NewMinecraftPlayerNameRule(newConfig *config.Rule, listMap map[string]set.StringSet) (Rule, error) {
-	var playerList jsonx.Listable[string]
-	err := json.Unmarshal(newConfig.Parameter, &playerList)
+func NewServiceNameRule(newConfig *config.Rule, listMap map[string]set.StringSet) (Rule, error) {
+	var serviceList jsonx.Listable[string]
+	err := json.Unmarshal(newConfig.Parameter, &serviceList)
 	if err != nil {
-		return nil, fmt.Errorf("bad player name list %v: %w", newConfig.Parameter, err)
+		return nil, fmt.Errorf("bad service name list %v: %w", newConfig.Parameter, err)
 	}
 	sets := []set.StringSet{
 		{}, // new set for individual names
 	}
-	for _, i := range playerList {
+	for _, i := range serviceList {
 		if strings.HasPrefix(i, parameterListPrefix) {
 			i = strings.TrimPrefix(i, parameterListPrefix)
 			nameSet, found := listMap[i]
@@ -39,23 +39,21 @@ func NewMinecraftPlayerNameRule(newConfig *config.Rule, listMap map[string]set.S
 			sets[0].Add(i)
 		}
 	}
-	return &RuleMinecraftPlayerName{
+	return &RuleServiceName{
 		sets:   sets,
 		config: newConfig,
 	}, nil
 }
 
-func (r *RuleMinecraftPlayerName) Config() *config.Rule {
+func (r RuleServiceName) Config() *config.Rule {
 	return r.config
 }
 
-func (r *RuleMinecraftPlayerName) Match(metadata *adapter.Metadata) (match bool) {
-	if metadata.Minecraft != nil {
-		for _, nameSet := range r.sets {
-			match = nameSet.Has(metadata.Minecraft.PlayerName)
-			if match {
-				break
-			}
+func (r RuleServiceName) Match(metadata *adapter.Metadata) (match bool) {
+	for _, nameSet := range r.sets {
+		match = nameSet.Has(metadata.ServiceName)
+		if match {
+			break
 		}
 	}
 	if r.config.Invert {

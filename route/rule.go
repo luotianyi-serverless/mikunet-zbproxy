@@ -33,6 +33,8 @@ func NewRule(logger *log.Logger, config *config.Rule, listMap map[string]set.Str
 		return NewLogicalAndRule(logger, config, listMap, ruleRegistry)
 	case "or":
 		return NewLogicalOrRule(logger, config, listMap, ruleRegistry)
+	case "ServiceName":
+		return NewServiceNameRule(config, listMap)
 	case "SourceIPVersion":
 		return NewSourceIPVersionRule(config)
 	case "SourceIP":
