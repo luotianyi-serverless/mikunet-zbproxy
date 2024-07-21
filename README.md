@@ -1,6 +1,6 @@
 # ZBProxy
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flayou233%2FZBProxy.svg?type=small)](https://app.fossa.com/projects/git%2Bgithub.com%2Flayou233%2FZBProxy?ref=badge_small)
-[![Go Reference](https://pkg.go.dev/badge/github.com/layou233/ZBProxy.svg)](https://pkg.go.dev/github.com/layou233/ZBProxy)
+[![Go Reference](https://pkg.go.dev/badge/github.com/layou233/zbproxy/v3.svg)](https://pkg.go.dev/github.com/layou233/zbproxy/v3)
 [![Go Report Card](https://goreportcard.com/badge/github.com/layou233/ZBProxy)](https://goreportcard.com/report/github.com/layou233/ZBProxy)  
 
 **English** | [**简体中文**](README_cn.md)

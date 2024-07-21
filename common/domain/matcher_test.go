@@ -5,12 +5,15 @@ import "testing"
 func TestMatcher(t *testing.T) {
 	matcher := NewMatcher(
 		[]string{ // domain
-			"example.com", "example.org",
+			"example.com", "example.com.", "example.org",
 		}, []string{ // domain suffix
 			"example.net", ".example.invalid",
 		})
 	if !matcher.Match("example.com") {
 		t.Error("example.com is not matched")
+	}
+	if !matcher.Match("example.com.") {
+		t.Error("example.com. is not matched")
 	}
 	if !matcher.Match("example.org") {
 		t.Error("example.org is not matched")

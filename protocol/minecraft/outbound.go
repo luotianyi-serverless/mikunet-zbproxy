@@ -324,7 +324,7 @@ func (o *Outbound) InjectConnection(ctx context.Context, conn *bufio.CachedConn,
 			}
 		}
 		if o.config.Minecraft.OnlineCount.EnableMaxLimit &&
-			o.config.Minecraft.OnlineCount.Max > o.onlineCount.Load() {
+			o.config.Minecraft.OnlineCount.Max >= o.onlineCount.Load() {
 			msg, err := generatePlayerNumberLimitExceededMessage(o.config, metadata.Minecraft.PlayerName).MarshalJSON()
 			if err != nil {
 				buffer.Release()
