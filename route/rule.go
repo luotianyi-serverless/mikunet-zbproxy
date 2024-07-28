@@ -39,6 +39,8 @@ func NewRule(logger *log.Logger, config *config.Rule, listMap map[string]set.Str
 		return NewSourceIPVersionRule(config)
 	case "SourceIP":
 		return NewSourceIPRule(config, listMap)
+	case "SourcePort":
+		return NewSourcePortRule(config)
 	case "MinecraftHostname":
 		return NewMinecraftHostnameRule(config, listMap)
 	case "MinecraftPlayerName":

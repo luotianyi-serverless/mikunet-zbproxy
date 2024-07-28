@@ -50,8 +50,8 @@ func (s *Service) listenLoop() {
 		if err != nil {
 			return
 		}
-		ip := conn.RemoteAddr().(*net.TCPAddr).IP
-		ipString := ip.String()
+		tcpAddress := conn.RemoteAddr().(*net.TCPAddr)
+		ipString := tcpAddress.IP.String()
 		if s.ipAccessLists != nil &&
 			!access.Check(s.ipAccessLists, s.config.IPAccess.Mode, ipString) {
 			conn.SetLinger(0)
@@ -63,7 +63,7 @@ func (s *Service) listenLoop() {
 			ServiceName:         s.config.Name,
 			DestinationHostname: s.config.TargetAddress,
 			DestinationPort:     s.config.TargetPort,
-			SourceIP:            common.MustOK(netip.AddrFromSlice(ip)).Unmap(),
+			SourceAddress:       netip.AddrPortFrom(common.MustOK(netip.AddrFromSlice(tcpAddress.IP)).Unmap(), uint16(tcpAddress.Port)),
 		}
 		metadata.GenerateID()
 		s.logger.Info().Str("id", metadata.ConnectionID).Str("service", s.config.Name).

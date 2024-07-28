@@ -32,7 +32,7 @@ func (r *RuleSourceIPVersion) Config() *config.Rule {
 }
 
 func (r *RuleSourceIPVersion) Match(metadata *adapter.Metadata) (match bool) {
-	if metadata.SourceIP.Is4() {
+	if metadata.SourceAddress.Addr().Is4() {
 		match = r.version == 4
 	} else {
 		match = r.version == 6

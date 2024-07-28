@@ -83,7 +83,7 @@ func (r *RuleSourceIP) Config() *config.Rule {
 }
 
 func (r *RuleSourceIP) Match(metadata *adapter.Metadata) (match bool) {
-	match = r.set.Contains(metadata.SourceIP.WithZone(""))
+	match = r.set.Contains(metadata.SourceAddress.Addr().WithZone(""))
 	if r.config.Invert {
 		match = !match
 	}

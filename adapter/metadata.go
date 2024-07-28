@@ -21,7 +21,7 @@ type Metadata struct {
 	ConnectionID        string
 	ServiceName         string
 	SniffedProtocol     Protocol
-	SourceIP            netip.Addr
+	SourceAddress       netip.AddrPort
 	DestinationHostname string
 	DestinationPort     uint16
 	Minecraft           *MinecraftMetadata

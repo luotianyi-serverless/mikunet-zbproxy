@@ -142,11 +142,11 @@ func (r *Router) HandleConnection(conn net.Conn, metadata *adapter.Metadata) {
 		}
 		r.access.RUnlock()
 		err = bufio.CopyConn(destinationConn, cachedConn)
+		logger := r.logger.Warn().Str("id", metadata.ConnectionID).Str("outbound", outbound.Name())
 		if err != nil {
-			r.logger.Warn().Str("id", metadata.ConnectionID).Str("outbound", outbound.Name()).Err(err).Msg("Handled connection")
-		} else {
-			r.logger.Info().Str("id", metadata.ConnectionID).Str("outbound", outbound.Name()).Msg("Handled connection")
+			logger = logger.Err(err)
 		}
+		logger.Msg("Handled outbound connection")
 		cachedConn.Close()
 		return
 	}
