@@ -24,7 +24,7 @@ func generateKickMessage(s *config.Outbound, name string) mcprotocol.Message {
 
 			{
 				Color: mcprotocol.Gray,
-				Text: fmt.Sprintf("Timestamp: %d | Player Name: %s | Service: %s\n",
+				Text: fmt.Sprintf("Timestamp: %d | Player Name: %s | Outbound: %s\n",
 					time.Now().UnixMilli(), name, s.Name),
 			},
 			{Text: "GitHub: "},
@@ -53,7 +53,7 @@ func generatePlayerNumberLimitExceededMessage(s *config.Outbound, name string) m
 
 			{
 				Color: mcprotocol.Gray,
-				Text: fmt.Sprintf("Timestamp: %d | Player Name: %s | Service: %s\n",
+				Text: fmt.Sprintf("Timestamp: %d | Player Name: %s | Outbound: %s\n",
 					time.Now().UnixMilli(), name, s.Name),
 			},
 			{Text: "GitHub: "},

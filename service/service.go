@@ -50,26 +50,26 @@ func (s *Service) listenLoop() {
 		if err != nil {
 			return
 		}
-		tcpAddress := conn.RemoteAddr().(*net.TCPAddr)
-		ipString := tcpAddress.IP.String()
-		if s.ipAccessLists != nil &&
-			!access.Check(s.ipAccessLists, s.config.IPAccess.Mode, ipString) {
-			conn.SetLinger(0)
-			conn.Close()
-			s.logger.Warn().Str("service", s.config.Name).Str("ip", ipString).Msg("Rejected by access control")
-			continue
-		}
-		metadata := &adapter.Metadata{
-			ServiceName:         s.config.Name,
-			DestinationHostname: s.config.TargetAddress,
-			DestinationPort:     s.config.TargetPort,
-			SourceAddress:       netip.AddrPortFrom(common.MustOK(netip.AddrFromSlice(tcpAddress.IP)).Unmap(), uint16(tcpAddress.Port)),
-		}
-		metadata.GenerateID()
-		s.logger.Info().Str("id", metadata.ConnectionID).Str("service", s.config.Name).
-			Str("ip", ipString).Msg("New inbound connection")
-		if s.legacyOutbound != nil {
-			go func() {
+		go func() {
+			tcpAddress := conn.RemoteAddr().(*net.TCPAddr)
+			ipString := tcpAddress.IP.String()
+			if s.ipAccessLists != nil &&
+				!access.Check(s.ipAccessLists, s.config.IPAccess.Mode, ipString) {
+				conn.SetLinger(0)
+				conn.Close()
+				s.logger.Warn().Str("service", s.config.Name).Str("ip", ipString).Msg("Rejected by access control")
+				return
+			}
+			metadata := &adapter.Metadata{
+				ServiceName:         s.config.Name,
+				DestinationHostname: s.config.TargetAddress,
+				DestinationPort:     s.config.TargetPort,
+				SourceAddress:       netip.AddrPortFrom(common.MustOK(netip.AddrFromSlice(tcpAddress.IP)).Unmap(), uint16(tcpAddress.Port)),
+			}
+			metadata.GenerateID()
+			s.logger.Info().Str("id", metadata.ConnectionID).Str("service", s.config.Name).
+				Str("ip", ipString).Msg("New inbound connection")
+			if s.legacyOutbound != nil {
 				defer s.logger.Info().Str("id", metadata.ConnectionID).Str("service", s.config.Name).
 					Str("ip", ipString).Msg("Disconnected")
 				defer conn.Close()
@@ -89,10 +89,10 @@ func (s *Service) listenLoop() {
 							Str("player", metadata.Minecraft.PlayerName).Err(err).Msg("Handling Minecraft connection")
 					}
 				}
-			}()
-		} else {
-			go s.router.HandleConnection(conn, metadata)
-		}
+			} else {
+				s.router.HandleConnection(conn, metadata)
+			}
+		}()
 	}
 }
 
