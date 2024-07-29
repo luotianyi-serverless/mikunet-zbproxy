@@ -7,6 +7,7 @@ import (
 
 	"github.com/layou233/zbproxy/v3/adapter"
 	"github.com/layou233/zbproxy/v3/common/jsonx"
+	"github.com/layou233/zbproxy/v3/common/mcprotocol"
 	"github.com/layou233/zbproxy/v3/common/set"
 	"github.com/layou233/zbproxy/v3/config"
 )
@@ -57,6 +58,32 @@ func (r *RuleMinecraftPlayerName) Match(metadata *adapter.Metadata) (match bool)
 				break
 			}
 		}
+	}
+	if r.config.Invert {
+		match = !match
+	}
+	return
+}
+
+type RuleMinecraftStatus struct {
+	config *config.Rule
+}
+
+var _ Rule = (*RuleMinecraftStatus)(nil)
+
+func NewMinecraftStatusRule(newConfig *config.Rule) (Rule, error) {
+	return &RuleMinecraftStatus{
+		config: newConfig,
+	}, nil
+}
+
+func (r *RuleMinecraftStatus) Config() *config.Rule {
+	return r.config
+}
+
+func (r *RuleMinecraftStatus) Match(metadata *adapter.Metadata) (match bool) {
+	if metadata.Minecraft != nil {
+		match = metadata.Minecraft.NextState == mcprotocol.NextStateStatus
 	}
 	if r.config.Invert {
 		match = !match
