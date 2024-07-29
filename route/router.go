@@ -126,7 +126,13 @@ func (r *Router) HandleConnection(conn net.Conn, metadata *adapter.Metadata) {
 	if injectOutbound, isInject := outbound.(adapter.InjectOutbound); isInject {
 		r.access.RUnlock()
 		err := injectOutbound.InjectConnection(r.ctx, cachedConn, metadata)
-		logger := r.logger.Warn().Str("id", metadata.ConnectionID).Str("outbound", outbound.Name())
+		var logger *log.Entry
+		if err == nil {
+			logger = r.logger.Info()
+		} else {
+			logger = r.logger.Warn()
+		}
+		logger = logger.Str("id", metadata.ConnectionID).Str("outbound", outbound.Name())
 		if err != nil {
 			logger = logger.Err(err)
 		}
@@ -142,7 +148,13 @@ func (r *Router) HandleConnection(conn net.Conn, metadata *adapter.Metadata) {
 		}
 		r.access.RUnlock()
 		err = bufio.CopyConn(destinationConn, cachedConn)
-		logger := r.logger.Warn().Str("id", metadata.ConnectionID).Str("outbound", outbound.Name())
+		var logger *log.Entry
+		if err == nil {
+			logger = r.logger.Info()
+		} else {
+			logger = r.logger.Warn()
+		}
+		logger = logger.Str("id", metadata.ConnectionID).Str("outbound", outbound.Name())
 		if err != nil {
 			logger = logger.Err(err)
 		}

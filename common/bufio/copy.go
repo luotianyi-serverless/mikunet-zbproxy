@@ -53,7 +53,9 @@ func CopyBuffer(destination io.Writer, source io.Reader, buffer *buf.Buffer) (wr
 		if destinationTCPConn, isDestinationTCP := destination.(*net.TCPConn); isDestinationTCP {
 			switch typedSource := source.(type) {
 			case *net.TCPConn, *net.UnixConn, *os.File:
-				written, err = io.Copy(destinationTCPConn, typedSource)
+				var _written int64
+				_written, err = io.Copy(destinationTCPConn, typedSource)
+				written += _written
 				switch common.Unwrap(err) {
 				case io.EOF, net.ErrClosed:
 					err = nil
@@ -64,7 +66,6 @@ func CopyBuffer(destination io.Writer, source io.Reader, buffer *buf.Buffer) (wr
 	}
 	if buffer == nil {
 		buffer = buf.NewSize(16 * 1024)
-		written, err = CopyBuffer(destination, source, buffer)
 		defer buffer.Release()
 	}
 	for {
