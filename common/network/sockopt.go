@@ -37,7 +37,7 @@ func (o *keepAliveOptions) KeepAliveConfig() (c KeepAliveConfig) {
 		Interval: time.Duration(o.KeepAliveInterval),
 		Count:    o.KeepAliveCount,
 	}
-	if c.Idle > 0 || c.Interval > 0 || c.Count > 0 {
+	if c.Idle != 0 || c.Interval != 0 || c.Count != 0 {
 		c.Enable = true
 	}
 	return
