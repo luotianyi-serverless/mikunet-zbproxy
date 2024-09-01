@@ -1,6 +1,7 @@
 package mcprotocol
 
 import (
+	"encoding/binary"
 	"errors"
 	"io"
 
@@ -37,17 +38,32 @@ func (i VarInt) WriteToBuffer(buffer *buf.Buffer) {
 // PutVarInt encodes a Minecraft variable-length format int32 into bs and returns the number of bytes written.
 // If the buffer is too small, PutVarInt will panic.
 func PutVarInt(bs []byte, n int32) (numWrite int) {
+	// https://steinborn.me/posts/performance/how-fast-can-you-write-a-varint/
 	num := uint32(n)
-	for num != 0 {
-		b := num & 0x7F
-		num >>= 7
-		if num != 0 {
-			b |= 0x80
-		}
-		bs[numWrite] = byte(b)
-		numWrite++
+	if num&0xFFFFFF80 == 0 {
+		bs[0] = byte(num)
+		return 1
+	} else if num&0xFFFFC000 == 0 {
+		result := uint16((num&0x7F|0x80)<<8 | (num >> 7))
+		binary.BigEndian.PutUint16(bs, result)
+		return 2
+	} else if num&0xFFE00000 == 0 {
+		bs[2] = byte(num >> 14)
+		startingBytes := uint16((num&0x7F|0x80)<<8 | ((num>>7)&0x7F | 0x80))
+		binary.BigEndian.PutUint16(bs, startingBytes)
+		return 3
+	} else if num&0xF0000000 == 0 {
+		result := (num&0x7F|0x80)<<24 | (((num>>7)&0x7F | 0x80) << 16) |
+			((num>>14)&0x7F|0x80)<<8 | (num >> 21)
+		binary.BigEndian.PutUint32(bs, result)
+		return 4
+	} else {
+		bs[4] = byte(num >> 28)
+		startingBytes := (num&0x7F|0x80)<<24 | ((num>>7)&0x7F|0x80)<<16 |
+			((num>>14)&0x7F|0x80)<<8 | ((num>>21)&0x7F | 0x80)
+		binary.BigEndian.PutUint32(bs, startingBytes)
+		return 5
 	}
-	return
 }
 
 func VarIntLen(n int32) int {

@@ -10,7 +10,7 @@ import (
 
 // samples from https://wiki.vg/Protocol#VarInt_and_VarLong
 
-func checkWrite(t *testing.T, n int32, result [MaxVarIntLen]byte) {
+func checkWrite(t *testing.T, n int32, result [MaxVarIntLen]byte, expectedLen int) {
 	buffer := buf.NewSize(MaxVarIntLen + 1)
 	defer buffer.Release()
 	_, err := VarInt(n).WriteTo(buffer)
@@ -18,6 +18,9 @@ func checkWrite(t *testing.T, n int32, result [MaxVarIntLen]byte) {
 		return
 	}
 	t.Log("VarInt", n, "WriteTo", buffer.Bytes())
+	if buffer.Len() != expectedLen {
+		t.Errorf("VarInt WriteTo length error: got %d, expect %d", buffer.Len(), expectedLen)
+	}
 	buffer.Truncate(MaxVarIntLen)
 	if !bytes.Equal(buffer.Bytes(), result[:]) {
 		t.Fatalf("VarInt WriteTo error: got %v, expect %v", buffer.Bytes(), result)
@@ -38,17 +41,17 @@ func checkRead(t *testing.T, n int32, result [MaxVarIntLen]byte) {
 }
 
 func TestVarInt_WriteTo(t *testing.T) {
-	checkWrite(t, 0, [MaxVarIntLen]byte{0})
-	checkWrite(t, 1, [MaxVarIntLen]byte{1})
-	checkWrite(t, 2, [MaxVarIntLen]byte{2})
-	checkWrite(t, 127, [MaxVarIntLen]byte{127})
-	checkWrite(t, 128, [MaxVarIntLen]byte{128, 1})
-	checkWrite(t, 255, [MaxVarIntLen]byte{255, 1})
-	checkWrite(t, 25565, [MaxVarIntLen]byte{221, 199, 1})
-	checkWrite(t, 2097151, [MaxVarIntLen]byte{255, 255, 127})
-	checkWrite(t, 2147483647, [MaxVarIntLen]byte{255, 255, 255, 255, 7})
-	checkWrite(t, -1, [MaxVarIntLen]byte{255, 255, 255, 255, 15})
-	checkWrite(t, -2147483648, [MaxVarIntLen]byte{128, 128, 128, 128, 8})
+	checkWrite(t, 0, [MaxVarIntLen]byte{0}, 1)
+	checkWrite(t, 1, [MaxVarIntLen]byte{1}, 1)
+	checkWrite(t, 2, [MaxVarIntLen]byte{2}, 1)
+	checkWrite(t, 127, [MaxVarIntLen]byte{127}, 1)
+	checkWrite(t, 128, [MaxVarIntLen]byte{128, 1}, 2)
+	checkWrite(t, 255, [MaxVarIntLen]byte{255, 1}, 2)
+	checkWrite(t, 25565, [MaxVarIntLen]byte{221, 199, 1}, 3)
+	checkWrite(t, 2097151, [MaxVarIntLen]byte{255, 255, 127}, 3)
+	checkWrite(t, 2147483647, [MaxVarIntLen]byte{255, 255, 255, 255, 7}, 5)
+	checkWrite(t, -1, [MaxVarIntLen]byte{255, 255, 255, 255, 15}, 5)
+	checkWrite(t, -2147483648, [MaxVarIntLen]byte{128, 128, 128, 128, 8}, 5)
 }
 
 func TestReadFrom(t *testing.T) {
