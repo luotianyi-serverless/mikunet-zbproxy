@@ -44,24 +44,24 @@ func PutVarInt(bs []byte, n int32) (numWrite int) {
 		bs[0] = byte(num)
 		return 1
 	} else if num&0xFFFFC000 == 0 {
-		result := uint16((num&0x7F|0x80)<<8 | (num >> 7))
-		binary.BigEndian.PutUint16(bs, result)
+		result := uint16((num&0x7F | 0x80) | (num>>7)<<8)
+		binary.LittleEndian.PutUint16(bs, result)
 		return 2
 	} else if num&0xFFE00000 == 0 {
 		bs[2] = byte(num >> 14)
-		startingBytes := uint16((num&0x7F|0x80)<<8 | ((num>>7)&0x7F | 0x80))
-		binary.BigEndian.PutUint16(bs, startingBytes)
+		startingBytes := uint16((num&0x7F | 0x80) | ((num>>7)&0x7F|0x80)<<8)
+		binary.LittleEndian.PutUint16(bs, startingBytes)
 		return 3
 	} else if num&0xF0000000 == 0 {
-		result := (num&0x7F|0x80)<<24 | (((num>>7)&0x7F | 0x80) << 16) |
-			((num>>14)&0x7F|0x80)<<8 | (num >> 21)
-		binary.BigEndian.PutUint32(bs, result)
+		result := (num&0x7F | 0x80) | ((num>>7)&0x7F|0x80)<<8 |
+			((num>>14)&0x7F|0x80)<<16 | (num>>21)<<24
+		binary.LittleEndian.PutUint32(bs, result)
 		return 4
 	} else {
 		bs[4] = byte(num >> 28)
-		startingBytes := (num&0x7F|0x80)<<24 | ((num>>7)&0x7F|0x80)<<16 |
-			((num>>14)&0x7F|0x80)<<8 | ((num>>21)&0x7F | 0x80)
-		binary.BigEndian.PutUint32(bs, startingBytes)
+		startingBytes := (num&0x7F | 0x80) | ((num>>7)&0x7F|0x80)<<8 |
+			((num>>14)&0x7F|0x80)<<16 | ((num>>21)&0x7F|0x80)<<24
+		binary.LittleEndian.PutUint32(bs, startingBytes)
 		return 5
 	}
 }
