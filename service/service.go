@@ -13,6 +13,7 @@ import (
 	"github.com/layou233/zbproxy/v3/common/access"
 	"github.com/layou233/zbproxy/v3/common/bufio"
 	"github.com/layou233/zbproxy/v3/common/network"
+	"github.com/layou233/zbproxy/v3/common/proxyprotocol"
 	"github.com/layou233/zbproxy/v3/common/set"
 	"github.com/layou233/zbproxy/v3/config"
 	"github.com/layou233/zbproxy/v3/protocol/minecraft"
@@ -46,6 +47,7 @@ func NewService(logger *log.Logger, newConfig *config.Service) *Service {
 func (s *Service) listenLoop() {
 	for {
 		conn, err := s.tcpListener.AcceptTCP()
+		var netConn net.Conn = conn
 		if err != nil {
 			return
 		}
@@ -66,15 +68,30 @@ func (s *Service) listenLoop() {
 				SourceAddress:       netip.AddrPortFrom(common.MustOK(netip.AddrFromSlice(tcpAddress.IP)).Unmap(), uint16(tcpAddress.Port)),
 			}
 			metadata.GenerateID()
+			var bufConn *bufio.CachedConn
+			if s.config.EnableProxyProtocol {
+				bufConn = bufio.NewCachedConn(conn)
+				netConn = bufConn
+				changed, err := proxyprotocol.HandleConnection(bufConn, metadata)
+				if err != nil {
+					bufConn.Close()
+					s.logger.Warn().Str("id", metadata.ConnectionID).Str("service", s.config.Name).
+						Str("ip", ipString).Err(err).Msg("Error when reading PROXY protocol header")
+					return
+				}
+				if changed {
+					ipString = metadata.SourceAddress.Addr().String()
+				}
+			}
 			s.logger.Info().Str("id", metadata.ConnectionID).Str("service", s.config.Name).
 				Str("ip", ipString).Msg("New inbound connection")
 			if s.legacyOutbound != nil {
 				defer s.logger.Info().Str("id", metadata.ConnectionID).Str("service", s.config.Name).
 					Str("ip", ipString).Msg("Disconnected")
-				defer conn.Close()
+				defer netConn.Close()
 				switch outbound := s.legacyOutbound.(type) {
 				case *minecraft.Outbound:
-					bufConn := &bufio.CachedConn{Conn: conn}
+					bufConn = bufio.NewCachedConn(netConn)
 					err = minecraft.SniffClientHandshake(bufConn, metadata)
 					bufConn.Release()
 					if err != nil {
@@ -89,7 +106,7 @@ func (s *Service) listenLoop() {
 					}
 				}
 			} else {
-				s.router.HandleConnection(conn, metadata)
+				s.router.HandleConnection(netConn, metadata)
 			}
 		}()
 	}

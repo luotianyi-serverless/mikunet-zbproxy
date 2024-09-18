@@ -1,6 +1,7 @@
 package bufio
 
 import (
+	"bytes"
 	"io"
 	"net"
 
@@ -67,6 +68,26 @@ func (c *CachedConn) Peek(n int) ([]byte, error) {
 		}
 	}
 	return c.cache.Peek(n)
+}
+
+func (c *CachedConn) PeekUntil(end ...[]byte) ([]byte, []byte, error) {
+	if c.cache == nil {
+		// see above
+		c.cache = buf.NewSize(4096)
+	}
+	for {
+		buffer := c.cache.Bytes()
+		for _, e := range end {
+			if index := bytes.Index(buffer, e); index >= 0 {
+				c.cache.Advance(index + len(e))
+				return buffer[:index], e, nil
+			}
+		}
+		_, err := c.cache.ReadAtLeastFrom(c.Conn, 1)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
 }
 
 func (c *CachedConn) Rewind(position int) {

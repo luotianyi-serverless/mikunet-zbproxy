@@ -8,11 +8,12 @@ type Service struct {
 	TargetPort    uint16 `json:",omitempty"`
 	Listen        uint16
 
-	IPAccess      access                        `json:",omitempty"`
-	Minecraft     *MinecraftService             `json:",omitempty"`
-	TLSSniffing   *tlsSniffing                  `json:",omitempty"`
-	SocketOptions *network.InboundSocketOptions `json:",omitempty"`
-	Outbound      outbound                      `json:",omitempty"`
+	EnableProxyProtocol bool                          `json:",omitempty"`
+	IPAccess            access                        `json:",omitempty"`
+	Minecraft           *MinecraftService             `json:",omitempty"`
+	TLSSniffing         *tlsSniffing                  `json:",omitempty"`
+	SocketOptions       *network.InboundSocketOptions `json:",omitempty"`
+	Outbound            outbound                      `json:",omitempty"`
 }
 
 type access struct {

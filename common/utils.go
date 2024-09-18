@@ -1,5 +1,7 @@
 package common
 
+var CRLF = []byte("\r\n")
+
 func Must[T any](s T, err error) T {
 	if err != nil {
 		panic(err)
