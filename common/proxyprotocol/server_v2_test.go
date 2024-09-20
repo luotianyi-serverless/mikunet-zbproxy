@@ -23,7 +23,7 @@ func TestServerV2(t *testing.T) {
 				// IPV4 -------------|  IPV4 ----------------|   SRC PORT   DEST PORT
 				0x7F, 0x00, 0x00, 0x01, 0x7F, 0x00, 0x00, 0x01, 0xCA, 0x2B, 0x04, 0x01},
 			source:   netip.MustParseAddrPort("127.0.0.1:51755"),
-			protocol: transportProtocolStream | transportProtocolIPv4,
+			protocol: TransportProtocolStream | TransportProtocolIPv4,
 		},
 		{
 			name: "UDP4 127.0.0.1",
@@ -31,7 +31,7 @@ func TestServerV2(t *testing.T) {
 			header: []byte{0x0D, 0x0A, 0x0D, 0x0A, 0x00, 0x0D, 0x0A, 0x51, 0x55, 0x49, 0x54, 0x0A, 0x21, 0x12, 0x00, 0x0C,
 				0x7F, 0x00, 0x00, 0x01, 0x7F, 0x00, 0x00, 0x01, 0xCA, 0x2B, 0x04, 0x01},
 			source:   netip.MustParseAddrPort("127.0.0.1:51755"),
-			protocol: transportProtocolDatagram | transportProtocolIPv4,
+			protocol: TransportProtocolDatagram | TransportProtocolIPv4,
 		},
 		{
 			name: "TCP6 Proxy for TCP4 127.0.0.1",
@@ -42,7 +42,7 @@ func TestServerV2(t *testing.T) {
 				// IPV6 -------------------------------------------------------------------------------------|   SRC PORT   DEST PORT
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x7F, 0x00, 0x00, 0x01, 0xCC, 0x4C, 0x04, 0x01},
 			source:   netip.MustParseAddrPort("127.0.0.1:52300"),
-			protocol: transportProtocolStream | transportProtocolIPv6,
+			protocol: TransportProtocolStream | TransportProtocolIPv6,
 		},
 		{
 			name: "TCP6 Maximal",
@@ -53,7 +53,7 @@ func TestServerV2(t *testing.T) {
 				// IPV6 -------------------------------------------------------------------------------------|   SRC PORT   DEST PORT
 				0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
 			source:   netip.MustParseAddrPort("[FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535"),
-			protocol: transportProtocolStream | transportProtocolIPv6,
+			protocol: TransportProtocolStream | TransportProtocolIPv6,
 		},
 		{
 			name: "TCP6 Proxy for TCP6 ::1",
@@ -66,11 +66,11 @@ func TestServerV2(t *testing.T) {
 				//TLVs
 				0x03, 0x00, 0x04, 0xFD, 0x16, 0xEE, 0x60},
 			source:   netip.MustParseAddrPort("[::1]:53135"),
-			protocol: transportProtocolStream | transportProtocolIPv6,
+			protocol: TransportProtocolStream | TransportProtocolIPv6,
 		},
 		{
 			name: "UDP6 Proxy for UDP6 ::1",
-			//                                                                                     VER  IP/TCP   LENGTH
+			//                                                                                     VER  IP/UDP   LENGTH
 			header: []byte{0x0D, 0x0A, 0x0D, 0x0A, 0x00, 0x0D, 0x0A, 0x51, 0x55, 0x49, 0x54, 0x0A, 0x21, 0x22, 0x00, 0x2B,
 				// IPV6 -------------------------------------------------------------------------------------|
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
@@ -79,7 +79,7 @@ func TestServerV2(t *testing.T) {
 				//TLVs
 				0x03, 0x00, 0x04, 0xFD, 0x16, 0xEE, 0x60},
 			source:   netip.MustParseAddrPort("[::1]:53135"),
-			protocol: transportProtocolDatagram | transportProtocolIPv6,
+			protocol: TransportProtocolDatagram | TransportProtocolIPv6,
 		},
 		{
 			name:    "Local with no trailing bytes",
@@ -105,7 +105,7 @@ func TestServerV2(t *testing.T) {
 				t.Fatalf("version mismatch: got=%v, expect=2", header.Version)
 			}
 			if tt.isLocal {
-				if header.Command != maskCommandLocal {
+				if header.Command != CommandLocal {
 					t.Fatalf("unexpected command: got=%v, expect=LOCAL", header.Command)
 				}
 				if tt.source.IsValid() && header.SourceAddress != tt.source {

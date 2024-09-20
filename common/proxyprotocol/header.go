@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	VersionUnspecified uint8 = iota
+	VersionUnspecified = iota
 	Version1
 	Version2
 )
@@ -18,18 +18,18 @@ const (
 	maskVersion  = 0xF0
 	maskVersion2 = 0x20
 
-	maskCommand      = 0x0F
-	maskCommandLocal = 0x0
-	maskCommandProxy = 0x1
+	maskCommand  = 0x0F
+	CommandLocal = 0x0
+	CommandProxy = 0x1
 
 	transportProtocolUnspecified       = 0x00
 	maskTransportProtocolAddressFamily = 0xF0
 	maskTransportProtocolType          = 0xF
-	transportProtocolIPv4              = 0x10
-	transportProtocolIPv6              = 0x20
-	transportProtocolUnix              = 0x30
-	transportProtocolStream            = 0x1
-	transportProtocolDatagram          = 0x2
+	TransportProtocolIPv4              = 0x10
+	TransportProtocolIPv6              = 0x20
+	TransportProtocolUnix              = 0x30
+	TransportProtocolStream            = 0x1
+	TransportProtocolDatagram          = 0x2
 )
 
 var (
@@ -42,4 +42,11 @@ type Header struct {
 	TransportProtocol uint8
 	SourceAddress     netip.AddrPort
 	//DestinationAddress netip.AddrPort
+}
+
+func TransportProtocolByAddr(addr netip.Addr) uint8 {
+	if addr.Is4() {
+		return TransportProtocolIPv4
+	}
+	return TransportProtocolIPv6
 }

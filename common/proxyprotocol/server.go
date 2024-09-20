@@ -16,7 +16,7 @@ func HandleConnection(conn *bufio.CachedConn, metadata *adapter.Metadata) (bool,
 	if err != nil {
 		return false, common.Cause("read PROXY protocol header: ", err)
 	}
-	if header.Command == maskCommandLocal || header.TransportProtocol == transportProtocolUnspecified {
+	if header.Command == CommandLocal || header.TransportProtocol == transportProtocolUnspecified {
 		return false, nil
 	}
 	if header.SourceAddress.IsValid() {
