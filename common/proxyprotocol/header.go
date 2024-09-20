@@ -44,7 +44,19 @@ type Header struct {
 	//DestinationAddress netip.AddrPort
 }
 
-func TransportProtocolByAddr(addr netip.Addr) uint8 {
+func TransportProtocolByNetwork(network string) uint8 {
+	// see documentation of net.Dial
+	switch network {
+	case "tcp", "tcp4", "tcp6", "unix":
+		return TransportProtocolStream
+	case "udp", "udp4", "udp6", "unixgram":
+		return TransportProtocolDatagram
+	default:
+		return transportProtocolUnspecified
+	}
+}
+
+func AddressFamilyByAddr(addr netip.Addr) uint8 {
 	if addr.Is4() {
 		return TransportProtocolIPv4
 	}

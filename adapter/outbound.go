@@ -6,6 +6,7 @@ import (
 	"net"
 
 	"github.com/layou233/zbproxy/v3/common/bufio"
+	"github.com/layou233/zbproxy/v3/common/network"
 	"github.com/layou233/zbproxy/v3/config"
 )
 
@@ -18,6 +19,17 @@ type Outbound interface {
 
 type InjectOutbound interface {
 	InjectConnection(ctx context.Context, conn *bufio.CachedConn, metadata *Metadata) error
+}
+
+type MetadataOutbound interface {
+	DialContextWithMetadata(ctx context.Context, network string, address string, metadata *Metadata) (net.Conn, error)
+}
+
+func DialContextWithMetadata(dialer network.Dialer, ctx context.Context, network, addr string, metadata *Metadata) (net.Conn, error) {
+	if metadataOutbound, isMetadataOutbound := dialer.(MetadataOutbound); isMetadataOutbound {
+		return metadataOutbound.DialContextWithMetadata(ctx, network, addr, metadata)
+	}
+	return dialer.DialContext(ctx, network, addr)
 }
 
 var ErrInjectionRequired = errors.New("injection required")

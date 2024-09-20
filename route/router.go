@@ -140,8 +140,9 @@ func (r *Router) HandleConnection(conn net.Conn, metadata *adapter.Metadata) {
 		cachedConn.Close()
 		return
 	} else if metadata.DestinationHostname != "" && metadata.DestinationPort > 0 {
-		destinationConn, err := outbound.DialContext(r.ctx, "tcp",
-			net.JoinHostPort(metadata.DestinationHostname, strconv.FormatUint(uint64(metadata.DestinationPort), 10)))
+		destinationConn, err := adapter.DialContextWithMetadata(outbound, r.ctx, "tcp",
+			net.JoinHostPort(metadata.DestinationHostname, strconv.FormatUint(uint64(metadata.DestinationPort), 10)),
+			metadata)
 		if err != nil {
 			r.logger.Warn().Str("id", metadata.ConnectionID).Str("outbound", outbound.Name()).
 				Err(err).Msg("Failed to dial outbound connection")

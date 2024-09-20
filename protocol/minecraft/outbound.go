@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/netip"
 	"net/url"
 	"strconv"
 	"strings"
@@ -19,6 +20,7 @@ import (
 	"github.com/layou233/zbproxy/v3/common/mcprotocol"
 	"github.com/layou233/zbproxy/v3/common/network"
 	"github.com/layou233/zbproxy/v3/common/network/socks"
+	"github.com/layou233/zbproxy/v3/common/proxyprotocol"
 	"github.com/layou233/zbproxy/v3/common/set"
 	"github.com/layou233/zbproxy/v3/config"
 	"github.com/layou233/zbproxy/v3/version"
@@ -151,6 +153,13 @@ func (o *Outbound) PostInitialize(router adapter.Router) error {
 	} else {
 		o.dialer = network.NewSystemDialer(o.config.SocketOptions)
 	}
+	switch o.config.ProxyProtocolVersion {
+	case proxyprotocol.VersionUnspecified,
+		proxyprotocol.Version1,
+		proxyprotocol.Version2:
+	default:
+		return fmt.Errorf("invalid proxy protocol version: %v", o.config.ProxyProtocolVersion)
+	}
 	switch o.config.ProxyOptions.Type {
 	case "socks", "socks5", "socks4a", "socks4":
 		o.dialer = &socks.Client{
@@ -179,8 +188,29 @@ func (o *Outbound) connectServer(ctx context.Context, metadata *adapter.Metadata
 		metadata.DestinationPort = o.config.TargetPort
 	}
 	destinationAddress := net.JoinHostPort(metadata.DestinationHostname, strconv.FormatUint(uint64(metadata.DestinationPort), 10))
-	o.logger.Info()
-	return o.dialer.DialContext(ctx, "tcp", destinationAddress)
+	conn, err := adapter.DialContextWithMetadata(o.dialer, ctx, "tcp", destinationAddress, metadata)
+	if err != nil {
+		return nil, err
+	}
+	if o.config.ProxyProtocolVersion != proxyprotocol.VersionUnspecified {
+		var localAddress netip.AddrPort
+		localAddress, err = netip.ParseAddrPort(conn.LocalAddr().String())
+		if err != nil {
+			conn.Close()
+			return nil, common.Cause("failed to parse local address: ", err)
+		}
+		err = (&proxyprotocol.Header{
+			Version:           uint8(o.config.ProxyProtocolVersion),
+			Command:           proxyprotocol.CommandProxy,
+			TransportProtocol: proxyprotocol.TransportProtocolStream | proxyprotocol.AddressFamilyByAddr(metadata.SourceAddress.Addr()),
+			SourceAddress:     metadata.SourceAddress,
+		}).WriteHeader(conn, localAddress)
+		if err != nil {
+			conn.Close()
+			return nil, common.Cause("failed to write PROXY protocol header: ", err)
+		}
+	}
+	return conn, nil
 }
 
 func (o *Outbound) InjectConnection(ctx context.Context, conn *bufio.CachedConn, metadata *adapter.Metadata) error {
