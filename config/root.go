@@ -83,7 +83,7 @@ func (r *Root) reloadEventLoop() {
 			if !ok {
 				return
 			}
-			r.logger.Debug().Uint32("operation", uint32(event.Op)).Msg("Config update detected")
+			r.logger.Debug().Str("operation", event.Op.String()).Msg("Config update detected")
 		case err, ok := <-r.watcher.Errors:
 			if ok {
 				r.logger.Debug().Err(err).Msg("Error when listening reload events")
