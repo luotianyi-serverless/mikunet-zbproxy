@@ -24,6 +24,7 @@ type Metadata struct {
 	SourceAddress       netip.AddrPort
 	DestinationHostname string
 	DestinationPort     uint16
+	SRV                 *SRVMetadata
 	Minecraft           *MinecraftMetadata
 	TLS                 *TLSMetadata
 	Custom              map[string]any
@@ -57,4 +58,8 @@ func (m *MinecraftMetadata) CleanOriginDestination() string {
 
 type TLSMetadata struct {
 	SNI string
+}
+
+type SRVMetadata struct {
+	ServiceName string
 }

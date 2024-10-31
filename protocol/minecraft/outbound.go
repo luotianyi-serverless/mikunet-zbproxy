@@ -29,6 +29,8 @@ import (
 	"github.com/zhangyunhao116/fastrand"
 )
 
+var minecraftSRV = &adapter.SRVMetadata{ServiceName: "minecraft"}
+
 type Outbound struct {
 	logger *log.Logger
 	config *config.Outbound
@@ -188,6 +190,9 @@ func (o *Outbound) connectServer(ctx context.Context, metadata *adapter.Metadata
 		metadata.DestinationPort = o.config.TargetPort
 	}
 	destinationAddress := net.JoinHostPort(metadata.DestinationHostname, strconv.FormatUint(uint64(metadata.DestinationPort), 10))
+	if !o.config.Minecraft.IgnoreSRVRedirect {
+		metadata.SRV = minecraftSRV
+	}
 	conn, err := adapter.DialContextWithMetadata(o.dialer, ctx, "tcp", destinationAddress, metadata)
 	if err != nil {
 		return nil, err

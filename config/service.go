@@ -27,7 +27,8 @@ type MinecraftService struct {
 
 	OnlineCount onlineCount
 
-	IgnoreFMLSuffix bool `json:",omitempty"`
+	IgnoreFMLSuffix   bool `json:",omitempty"`
+	IgnoreSRVRedirect bool `json:",omitempty"`
 
 	HostnameAccess access `json:",omitempty"`
 	NameAccess     access `json:",omitempty"`
