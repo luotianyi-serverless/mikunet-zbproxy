@@ -250,7 +250,7 @@ func (o *Outbound) InjectConnection(ctx context.Context, conn *bufio.CachedConn,
 			}
 			//remoteConn.(*net.TCPConn).SetLinger(0) // for some reason
 			if metadata.Minecraft.RewrittenDestination == "" {
-				metadata.Minecraft.RewrittenDestination = metadata.Minecraft.OriginDestination
+				metadata.Minecraft.RewrittenDestination = metadata.Minecraft.CleanOriginDestination()
 			}
 			if metadata.Minecraft.RewrittenPort == 0 {
 				metadata.Minecraft.RewrittenPort = metadata.Minecraft.OriginPort
@@ -265,10 +265,10 @@ func (o *Outbound) InjectConnection(ctx context.Context, conn *bufio.CachedConn,
 					hostname = o.config.TargetAddress
 				}
 			} else if hostname == "" {
-				hostname = metadata.Minecraft.OriginDestination
+				hostname = metadata.Minecraft.CleanOriginDestination()
 			}
 			if !o.config.Minecraft.IgnoreFMLSuffix && metadata.Minecraft.IsFML() {
-				hostname += "\x00FML\x00"
+				hostname += "\x00" + metadata.Minecraft.FMLMarkup()
 			}
 			port := metadata.Minecraft.RewrittenPort
 			if port <= 0 {
@@ -391,10 +391,10 @@ func (o *Outbound) InjectConnection(ctx context.Context, conn *bufio.CachedConn,
 				hostname = o.config.TargetAddress
 			}
 		} else if hostname == "" {
-			hostname = metadata.Minecraft.OriginDestination
+			hostname = metadata.Minecraft.CleanOriginDestination()
 		}
 		if !o.config.Minecraft.IgnoreFMLSuffix && metadata.Minecraft.IsFML() {
-			hostname += "\x00FML\x00"
+			hostname += "\x00" + metadata.Minecraft.FMLMarkup()
 		}
 		port := metadata.Minecraft.RewrittenPort
 		if port <= 0 {

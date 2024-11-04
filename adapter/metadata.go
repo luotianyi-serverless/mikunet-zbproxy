@@ -41,6 +41,7 @@ type MinecraftMetadata struct {
 	PlayerName           string
 	OriginDestination    string
 	RewrittenDestination string
+	fmlMarkup            string
 	OriginPort           uint16
 	RewrittenPort        uint16
 	UUID                 [16]byte
@@ -49,11 +50,19 @@ type MinecraftMetadata struct {
 }
 
 func (m *MinecraftMetadata) IsFML() bool {
-	return strings.HasSuffix(m.OriginDestination, "\x00FML\x00")
+	return strings.IndexByte(m.OriginDestination, 0) != -1
 }
 
-func (m *MinecraftMetadata) CleanOriginDestination() string {
-	return strings.TrimSuffix(m.OriginDestination, "\x00FML\x00")
+func (m *MinecraftMetadata) CleanOriginDestination() (clean string) {
+	clean, m.fmlMarkup, _ = strings.Cut(m.OriginDestination, "\x00")
+	return
+}
+
+func (m *MinecraftMetadata) FMLMarkup() string {
+	if m.fmlMarkup == "" {
+		_, m.fmlMarkup, _ = strings.Cut(m.OriginDestination, "\x00")
+	}
+	return m.fmlMarkup
 }
 
 type TLSMetadata struct {
