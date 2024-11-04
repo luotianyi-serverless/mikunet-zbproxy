@@ -1,7 +1,7 @@
 # ZBProxy
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flayou233%2FZBProxy.svg?type=small)](https://app.fossa.com/projects/git%2Bgithub.com%2Flayou233%2FZBProxy?ref=badge_small)
 [![Go Reference](https://pkg.go.dev/badge/github.com/layou233/zbproxy/v3.svg)](https://pkg.go.dev/github.com/layou233/zbproxy/v3)
-[![Go Report Card](https://goreportcard.com/badge/github.com/layou233/ZBProxy)](https://goreportcard.com/report/github.com/layou233/ZBProxy)  
+[![Go Report Card](https://goreportcard.com/badge/github.com/layou233/zbproxy/v3)](https://goreportcard.com/report/github.com/layou233/zbproxy/v3)  
 
 **English** | [**简体中文**](README_cn.md)
 
@@ -65,9 +65,6 @@ If you are just new in here, you can view the **[ZBProxy Document](https://launi
 Generally speaking, Linux-based operating environments have more room for optimization.  
 ZBProxy supports **Zero Copy** technology on Linux, which can *reduce memory usage **by one time**, save **a lot of** CPU processing, and reduce **network latency***. When users set `Flow` to `auto` or `linux-zerocopy` on their `Service` configuration, this technology will be automatically adopted in due course.  
 If you are running ZBProxy on a Linux-based system, you can go to **[ZBProxy Document](https://launium.com/doc/ZBProxy)** to view **tips for optimizing network settings**.
-
-## TODO List
-1. Some functions are still not implemented.
 
 ## Sponsor
 [![JetBrains logo](https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.svg)](https://www.jetbrains.com/?from=ZBProxy)  

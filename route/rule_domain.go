@@ -78,7 +78,7 @@ var _ Rule = (*RuleMinecraftHostname)(nil)
 
 func (r *RuleMinecraftHostname) Match(metadata *adapter.Metadata) (match bool) {
 	if metadata.Minecraft != nil {
-		match = r.matcher.Match(metadata.Minecraft.OriginDestination)
+		match = r.matcher.Match(metadata.Minecraft.CleanOriginDestination())
 	}
 	if r.config.Invert {
 		match = !match
