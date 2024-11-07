@@ -17,8 +17,8 @@ import (
 
 func main() {
 	console.SetTitle(fmt.Sprintf("zbproxy %v | running...", version.Version))
-	fmt.Printf(color.Apply(color.FgHiGreen, "zbproxy %s (VCMCS Fork)\n"), version.Version)
-	fmt.Printf(color.Apply(color.FgHiBlack, "Build Information: %s, %s/%s, CGO %s\n"),
+	fmt.Printf(color.Apply(color.FgHiGreen, "VCMCS forked zbproxy %s\n"), version.Version)
+	fmt.Printf(color.Apply(color.FgHiGreen, "Build Information: %s, %s/%s, CGO %s\n"),
 		runtime.Version(), runtime.GOOS, runtime.GOARCH, common.CGOHint)
 	// go version.CheckUpdate()
 

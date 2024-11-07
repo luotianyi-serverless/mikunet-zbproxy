@@ -56,7 +56,10 @@ func (s *Service) listenLoop() {
 				!access.Check(s.ipAccessLists, s.config.IPAccess.Mode, ipString) {
 				conn.SetLinger(0)
 				conn.Close()
-				s.logger.Warn().Str("service", s.config.Name).Str("ip", ipString).Msg("Rejected by access control")
+				s.logger.Warn().
+					Str("service", s.config.Name).
+					Str("ip", ipString).
+					Msg("Rejected by access control")
 				return
 			}
 			metadata := &adapter.Metadata{
@@ -66,10 +69,14 @@ func (s *Service) listenLoop() {
 				SourceAddress:       netip.AddrPortFrom(common.MustOK(netip.AddrFromSlice(tcpAddress.IP)).Unmap(), uint16(tcpAddress.Port)),
 			}
 			metadata.GenerateID()
-			s.logger.Info().Str("id", metadata.ConnectionID).Str("service", s.config.Name).
+			s.logger.Info().
+				Str("proxyConnectionID", metadata.ConnectionID).
+				Str("service", s.config.Name).
 				Str("ip", ipString).Msg("New inbound connection")
 			if s.legacyOutbound != nil {
-				defer s.logger.Info().Str("id", metadata.ConnectionID).Str("service", s.config.Name).
+				defer s.logger.Info().
+					Str("proxyConnectionID", metadata.ConnectionID).
+					Str("service", s.config.Name).
 					Str("ip", ipString).Msg("Disconnected")
 				defer conn.Close()
 				switch outbound := s.legacyOutbound.(type) {
@@ -78,14 +85,21 @@ func (s *Service) listenLoop() {
 					err = minecraft.SniffClientHandshake(bufConn, metadata)
 					bufConn.Release()
 					if err != nil {
-						s.logger.Warn().Str("id", metadata.ConnectionID).Str("service", s.config.Name).
+						s.logger.Warn().
+							Str("proxyConnectionID", metadata.ConnectionID).
+							Str("service", s.config.Name).
 							Str("ip", ipString).Err(err).Msg("Error when reading Minecraft handshake")
 						return
 					}
 					err = outbound.InjectConnection(s.ctx, bufConn, metadata)
 					if err != nil {
-						s.logger.Info().Str("id", metadata.ConnectionID).Str("service", s.config.Name).
-							Str("player", metadata.Minecraft.PlayerName).Err(err).Msg("Handling Minecraft connection")
+						s.logger.Info().
+							Str("proxyConnectionID", metadata.ConnectionID).
+							Str("service", s.config.Name).
+							Str("player", metadata.Minecraft.PlayerName).
+							Str("ip", ipString).
+							Err(err).
+							Msg("Handling Minecraft connection")
 					}
 				}
 			} else {
@@ -141,7 +155,9 @@ func (s *Service) Start(ctx context.Context) error {
 	}
 	s.tcpListener = listener.(*net.TCPListener)
 	s.ctx = ctx
-	s.logger.Info().Str("service", s.config.Name).Msg("Listening on " + s.listenAddress)
+	s.logger.Info().
+		Str("service", s.config.Name).
+		Msg("Listening on " + s.listenAddress)
 
 	go s.listenLoop()
 	return nil

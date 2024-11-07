@@ -79,19 +79,26 @@ func (r *Root) reloadEventLoop() {
 			if !ok {
 				return
 			}
-			r.logger.Debug().Msg("Config reload triggered manually")
+			r.logger.Debug().
+				Msg("Config reload triggered manually")
 		case event, ok := <-r.watcher.Events:
 			if !ok {
 				return
 			}
-			r.logger.Debug().Uint32("operation", uint32(event.Op)).Msg("Config update detected")
+			r.logger.Debug().
+				Uint32("operation", uint32(event.Op)).
+				Msg("Config update detected")
 		case err, ok := <-r.watcher.Errors:
 			if ok {
-				r.logger.Debug().Err(err).Msg("Error when listening reload events")
+				r.logger.Debug().
+					Err(err).
+					Msg("Error when listening reload events")
 			}
 			return
 		case <-r.ctx.Done():
-			r.logger.Debug().Err(r.ctx.Err()).Msg("Closing config watcher")
+			r.logger.Debug().
+				Err(r.ctx.Err()).
+				Msg("Closing config watcher")
 			r.Close()
 			return
 		}
@@ -100,7 +107,9 @@ func (r *Root) reloadEventLoop() {
 		var rawConfig _Root
 		err := loadContent(&rawConfig, r.filePath)
 		if err != nil {
-			r.logger.Error().Err(err).Msg("Error when loading content from file")
+			r.logger.Error().
+				Err(err).
+				Msg("Error when loading content from file")
 			continue
 		}
 
@@ -113,7 +122,9 @@ func (r *Root) reloadEventLoop() {
 		if r.updateHandler != nil {
 			r.updateHandler()
 		}
-		r.logger.Info().Str("duration", time.Now().Sub(startTime).String()).Msg("Config reloaded successfully")
+		r.logger.Info().
+			Str("duration", time.Now().Sub(startTime).String()).
+			Msg("Config reloaded successfully")
 	}
 }
 
@@ -141,7 +152,7 @@ func LoadConfigFromFile(ctx context.Context, filePath string, watch bool, logger
 				},
 				Services: []*Service{
 					{
-						Name:   "Hypixel-in",
+						Name:   "default-service",
 						Listen: 25565,
 					},
 				},
@@ -152,12 +163,12 @@ func LoadConfigFromFile(ctx context.Context, filePath string, watch bool, logger
 							Sniff: jsonx.Listable[string]{"minecraft"},
 						},
 					},
-					DefaultOutbound: "Hypixel-out",
+					DefaultOutbound: "default-outbound",
 				},
 				Outbounds: []*Outbound{
 					{
-						Name:          "Hypixel-out",
-						TargetAddress: "mc.hypixel.net",
+						Name:          "default-outbound",
+						TargetAddress: "mc.example.net",
 						TargetPort:    25565,
 						Minecraft: &MinecraftService{
 							EnableHostnameRewrite: true,
@@ -165,8 +176,7 @@ func LoadConfigFromFile(ctx context.Context, filePath string, watch bool, logger
 								Max:    20,
 								Online: -1,
 							},
-							MotdFavicon:     "{DEFAULT_MOTD}",
-							MotdDescription: "§d{NAME}§e, provided by §a§o{INFO}§r\n§c§lProxy for §6§n{HOST}:{PORT}§r",
+							MotdFavicon: "{DEFAULT_MOTD}",
 						},
 					},
 				},

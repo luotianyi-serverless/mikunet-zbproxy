@@ -39,7 +39,7 @@ func NewInstance(ctx context.Context, options Options) (*Instance, error) {
 	instance := &Instance{
 		ctx: ctx,
 		logger: &log.Logger{
-			TimeFormat: "15:04:05",
+			TimeFormat: "2006-01-02 15:04:05-0700",
 			Writer:     options.LogWriter,
 		},
 		config:          options.Config,
@@ -130,7 +130,9 @@ func (i *Instance) Start() error {
 		i.serviceMap[serviceConfig.Name] = newService
 	}
 
-	i.logger.Info().Str("duration", time.Now().Sub(startTime).String()).Msg("zbproxy started")
+	i.logger.Info().
+		Str("duration", time.Now().Sub(startTime).String()).
+		Msg("zbproxy started")
 	return nil
 }
 
@@ -145,14 +147,20 @@ func (i *Instance) UpdateConfig() {
 		if oldOutbound, ok := i.outboundMap[outboundConfig.Name]; ok {
 			err := oldOutbound.Reload(outboundConfig)
 			if err != nil {
-				i.logger.Error().Str("outbound", outboundConfig.Name).Err(err).Msg("Error when updating outbounds")
+				i.logger.Error().
+					Str("outbound", outboundConfig.Name).
+					Err(err).
+					Msg("Error when updating outbounds")
 				return
 			}
 			newOutboundMap[outboundConfig.Name] = oldOutbound
 		} else {
 			newOutbound, err := protocol.NewOutbound(i.logger, outboundConfig)
 			if err != nil {
-				i.logger.Error().Str("outbound", outboundConfig.Name).Err(err).Msg("Error when initializing outbounds")
+				i.logger.Error().
+					Str("outbound", outboundConfig.Name).
+					Err(err).
+					Msg("Error when initializing outbounds")
 				return
 			}
 			newOutboundMap[outboundConfig.Name] = newOutbound
@@ -168,7 +176,9 @@ func (i *Instance) UpdateConfig() {
 		SnifferRegistry: i.snifferRegistry,
 	})
 	if err != nil {
-		i.logger.Error().Err(err).Msg("Error when updating router")
+		i.logger.Error().
+			Err(err).
+			Msg("Error when updating router")
 		return
 	}
 
@@ -178,7 +188,10 @@ func (i *Instance) UpdateConfig() {
 		if oldService, ok := i.serviceMap[serviceConfig.Name]; ok {
 			err = oldService.Reload(i.ctx, serviceConfig)
 			if err != nil {
-				i.logger.Error().Str("service", serviceConfig.Name).Err(err).Msg("Error when updating services")
+				i.logger.Error().
+					Str("service", serviceConfig.Name).
+					Err(err).
+					Msg("Error when updating services")
 				return
 			}
 			newServiceMap[serviceConfig.Name] = oldService
@@ -187,7 +200,10 @@ func (i *Instance) UpdateConfig() {
 			newService.UpdateRouter(i.router)
 			err = newService.Start(i.ctx)
 			if err != nil {
-				i.logger.Error().Str("service", serviceConfig.Name).Err(err).Msg("Error when initializing services")
+				i.logger.Error().
+					Str("service", serviceConfig.Name).
+					Err(err).
+					Msg("Error when initializing services")
 				return
 			}
 			newServiceMap[serviceConfig.Name] = newService

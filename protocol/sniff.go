@@ -33,7 +33,10 @@ func Sniff(logger *log.Logger, conn bufio.PeekConn, metadata *adapter.Metadata, 
 			if metadata.Minecraft == nil {
 				err = minecraft.SniffClientHandshake(conn, metadata)
 				if err != nil {
-					logger.Trace().Str("protocol", protocol).Err(err).Msg("Sniff error")
+					logger.Trace().
+						Str("protocol", protocol).
+						Err(err).
+						Msg("Sniff error")
 				}
 			}
 			if !sniffAll {
@@ -48,7 +51,10 @@ func Sniff(logger *log.Logger, conn bufio.PeekConn, metadata *adapter.Metadata, 
 				for _, snifferFunc := range registry {
 					err = snifferFunc(logger, conn, metadata)
 					if err != nil {
-						logger.Trace().Str("protocol", protocol).Err(err).Msg("Sniff error")
+						logger.Trace().
+							Str("protocol", protocol).
+							Err(err).
+							Msg("Sniff error")
 					}
 				}
 				return
@@ -56,13 +62,20 @@ func Sniff(logger *log.Logger, conn bufio.PeekConn, metadata *adapter.Metadata, 
 				if snifferFunc := registry[protocol]; snifferFunc != nil {
 					err = snifferFunc(logger, conn, metadata)
 					if err != nil {
-						logger.Trace().Str("protocol", protocol).Err(err).Msg("Sniff error")
+						logger.Trace().
+							Str("protocol", protocol).
+							Err(err).
+							Msg("Sniff error")
 					}
 				} else {
-					logger.Fatal().Str("protocol", protocol).Msg("Unsupported protocol")
+					logger.Fatal().
+						Str("protocol", protocol).
+						Msg("Unsupported protocol")
 				}
 			} else {
-				logger.Fatal().Str("protocol", protocol).Msg("Unsupported protocol")
+				logger.Fatal().
+					Str("protocol", protocol).
+					Msg("Unsupported protocol")
 			}
 		}
 		conn.Rewind(startPosition)

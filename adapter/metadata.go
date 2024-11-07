@@ -31,8 +31,7 @@ type Metadata struct {
 
 func (m *Metadata) GenerateID() {
 	id := int64(fastrand.Int31())
-	idColor := fastrand.Int31n(int32(len(color.List)))
-	m.ConnectionID = color.Apply(color.List[idColor], "["+strconv.FormatInt(id, 10)+"]")
+	m.ConnectionID = color.Apply(color.FgHiYellow, "["+strconv.FormatInt(id, 10)+"]")
 }
 
 type MinecraftMetadata struct {

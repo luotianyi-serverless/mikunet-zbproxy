@@ -82,7 +82,10 @@ func (r *Router) HandleConnection(conn net.Conn, metadata *adapter.Metadata) {
 	for i, rule := range r.rules {
 		match := rule.Match(metadata)
 		if match {
-			r.logger.Trace().Str("id", metadata.ConnectionID).Int("rule_index", i).Msg("Rule matched")
+			r.logger.Trace().
+				Str("proxyConnectionID", metadata.ConnectionID).
+				Int("rule_index", i).
+				Msg("Rule matched")
 			ruleConfig := rule.Config()
 			// handle sniff
 			if len(ruleConfig.Sniff) > 0 {
@@ -97,7 +100,10 @@ func (r *Router) HandleConnection(conn net.Conn, metadata *adapter.Metadata) {
 			}
 			if ruleConfig.Rewrite.Minecraft != nil {
 				if metadata.Minecraft == nil {
-					r.logger.Debug().Str("id", metadata.ConnectionID).Int("rule_index", i).Msg("No Minecraft metadata, skipped rewrite")
+					r.logger.Debug().
+						Str("proxyConnectionID", metadata.ConnectionID).
+						Int("rule_index", i).
+						Msg("No Minecraft metadata, skipped rewrite")
 				} else {
 					if ruleConfig.Rewrite.Minecraft.Hostname != "" {
 						metadata.Minecraft.RewrittenDestination = ruleConfig.Rewrite.Minecraft.Hostname
@@ -112,7 +118,9 @@ func (r *Router) HandleConnection(conn net.Conn, metadata *adapter.Metadata) {
 				var err error
 				outbound, err = r.FindOutboundByName(ruleConfig.Outbound)
 				if err != nil {
-					r.logger.Error().Str("id", metadata.ConnectionID).Int("rule_index", i).
+					r.logger.Error().
+						Str("proxyConnectionID", metadata.ConnectionID).
+						Int("rule_index", i).
 						Err(err).Msg("Failed to find outbound")
 					conn.Close()
 					r.access.RUnlock()
@@ -132,7 +140,10 @@ func (r *Router) HandleConnection(conn net.Conn, metadata *adapter.Metadata) {
 		} else {
 			logger = r.logger.Warn()
 		}
-		logger = logger.Str("id", metadata.ConnectionID).Str("outbound", outbound.Name())
+		logger = logger.
+			Str("proxyConnectionID", metadata.ConnectionID).
+			Str("outbound", outbound.Name()).
+			Str("dest", metadata.DestinationHostname)
 		if err != nil {
 			logger = logger.Err(err)
 		}
@@ -143,8 +154,12 @@ func (r *Router) HandleConnection(conn net.Conn, metadata *adapter.Metadata) {
 		destinationConn, err := outbound.DialContext(r.ctx, "tcp",
 			net.JoinHostPort(metadata.DestinationHostname, strconv.FormatUint(uint64(metadata.DestinationPort), 10)))
 		if err != nil {
-			r.logger.Warn().Str("id", metadata.ConnectionID).Str("outbound", outbound.Name()).
-				Err(err).Msg("Failed to dial outbound connection")
+			r.logger.Warn().
+				Str("proxyConnectionID", metadata.ConnectionID).
+				Str("outbound", outbound.Name()).
+				Str("dest", metadata.DestinationHostname).
+				Err(err).
+				Msg("Failed to dial outbound connection")
 		}
 		r.access.RUnlock()
 		err = bufio.CopyConn(destinationConn, cachedConn)
@@ -154,7 +169,10 @@ func (r *Router) HandleConnection(conn net.Conn, metadata *adapter.Metadata) {
 		} else {
 			logger = r.logger.Warn()
 		}
-		logger = logger.Str("id", metadata.ConnectionID).Str("outbound", outbound.Name())
+		logger = logger.
+			Str("proxyConnectionID", metadata.ConnectionID).
+			Str("outbound", outbound.Name()).
+			Str("dest", metadata.DestinationHostname)
 		if err != nil {
 			logger = logger.Err(err)
 		}
@@ -162,7 +180,9 @@ func (r *Router) HandleConnection(conn net.Conn, metadata *adapter.Metadata) {
 		cachedConn.Close()
 		return
 	}
-	r.logger.Info().Str("id", metadata.ConnectionID).Msg("Closed leaked connection")
+	r.logger.Info().
+		Str("proxyConnectionID", metadata.ConnectionID).
+		Msg("Closed leaked connection")
 	cachedConn.Close()
 	r.access.RUnlock()
 }

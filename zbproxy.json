@@ -1,13 +1,33 @@
 {
-    "Log": {
-        "Level": "info"
-    },
     "Services": [
         {
-            "Name": "VCMCS",
-            "Listen": 25565,
-            "TargetPort": 25565,
-            "TargetAddress": "mc-app-us.mikunet.me"
+            "Name": "VCMCS-Proxy",
+            "Listen": 25565
         }
-    ]
+    ],
+    "Router": {
+        "DefaultOutbound": "REJECT",
+        "Rules": [
+            {
+                "Type": "always",
+                "Sniff": "all",
+                "Outbound": "VCMCS-Server-US"
+            }
+        ]
+    },
+    "Outbounds": [
+        {
+            "Name": "VCMCS-Server-US",
+            "TargetAddress": "FILL-BACKEND-SERVER-ADDRESS",
+            "TargetPort": 25565,
+            "Minecraft": {
+                "OnlineCount": {
+                    "Max": 7120,
+                    "Online": -1
+                },
+                "MotdDescription": "§9VCMCS §6§o4th §7§r- §a§nCN2加速§r §3ZBP/{VERSION}"
+            }
+        }
+    ],
+    "Lists": {}
 }

@@ -79,7 +79,7 @@ func (o *Outbound) PostInitialize(router adapter.Router) error {
 		o.config.Minecraft.MotdFavicon = defaultMOTD
 	}
 	o.config.Minecraft.MotdDescription = strings.NewReplacer(
-		"{INFO}", "zbproxy "+version.Version,
+		"{VERSION}", strings.ToUpper(version.Version),
 		"{NAME}", o.config.Name,
 		"{HOST}", o.config.TargetAddress,
 		"{PORT}", strconv.Itoa(int(o.config.TargetPort)),
@@ -295,7 +295,11 @@ func (o *Outbound) InjectConnection(ctx context.Context, conn *bufio.CachedConn,
 					return common.Cause("respond ping request: ", err)
 				}
 			}
-			o.logger.Info().Str("id", metadata.ConnectionID).Str("outbound", o.config.Name).Msg("Responded MOTD")
+			o.logger.Info().
+				Str("proxyConnectionID", metadata.ConnectionID).
+				Str("outbound", o.config.Name).
+				Str("dest", metadata.DestinationHostname).
+				Msg("Responded MOTD")
 			return nil
 		}
 
@@ -316,8 +320,13 @@ func (o *Outbound) InjectConnection(ctx context.Context, conn *bufio.CachedConn,
 					buffer.Release()
 					return common.Cause("send kick packet: ", err)
 				}
-				o.logger.Warn().Str("id", metadata.ConnectionID).Str("outbound", o.config.Name).
-					Str("player", metadata.Minecraft.PlayerName).Msg("Kicked by name access control")
+				o.logger.Warn().
+					Str("proxyConnectionID", metadata.ConnectionID).
+					Str("outbound", o.config.Name).
+					Str("dest", metadata.DestinationHostname).
+					Str("player", metadata.Minecraft.PlayerName).
+					Str("sourceNetAddr", metadata.SourceAddress.String()).
+					Msg("Kicked by name access control")
 				conn.Conn.(*net.TCPConn).SetLinger(10)
 				buffer.Release()
 				return nil
@@ -337,8 +346,13 @@ func (o *Outbound) InjectConnection(ctx context.Context, conn *bufio.CachedConn,
 				buffer.Release()
 				return common.Cause("send player number limit exceeded packet: ", err)
 			}
-			o.logger.Warn().Str("id", metadata.ConnectionID).Str("outbound", o.config.Name).
-				Str("player", metadata.Minecraft.PlayerName).Msg("Kicked by player number limiter")
+			o.logger.Warn().
+				Str("proxyConnectionID", metadata.ConnectionID).
+				Str("outbound", o.config.Name).
+				Str("dest", metadata.DestinationHostname).
+				Str("player", metadata.Minecraft.PlayerName).
+				Str("sourceNetAddr", metadata.SourceAddress.String()).
+				Msg("Kicked by player number limiter")
 			conn.Conn.(*net.TCPConn).SetLinger(10)
 			buffer.Release()
 			return nil
@@ -382,8 +396,13 @@ func (o *Outbound) InjectConnection(ctx context.Context, conn *bufio.CachedConn,
 			return common.Cause("server handshake: ", err)
 		}
 		cache.Advance(cache.Len()) // all written
-		o.logger.Info().Str("id", metadata.ConnectionID).Str("outbound", o.config.Name).
-			Str("player", metadata.Minecraft.PlayerName).Msg("Created Minecraft connection")
+		o.logger.Info().
+			Str("proxyConnectionID", metadata.ConnectionID).
+			Str("outbound", o.config.Name).
+			Str("dest", metadata.DestinationHostname).
+			Str("player", metadata.Minecraft.PlayerName).
+			Str("sourceNetAddr", metadata.SourceAddress.String()).
+			Msg("Created Minecraft connection")
 		o.onlineCount.Add(1)
 		err = bufio.CopyConn(serverConn, conn)
 		o.onlineCount.Add(-1)
