@@ -67,7 +67,7 @@ func NewInstance(ctx context.Context, options Options) (*Instance, error) {
 				newConfig.SetUpdateHandler(instance.UpdateConfig)
 			}
 		} else {
-			return nil, errors.New("no config provided for ZBProxy")
+			return nil, errors.New("no config provided for zbproxy")
 		}
 	}
 	instance.logger.Level = instance.config.Log.Level
@@ -130,7 +130,7 @@ func (i *Instance) Start() error {
 		i.serviceMap[serviceConfig.Name] = newService
 	}
 
-	i.logger.Info().Str("duration", time.Now().Sub(startTime).String()).Msg("ZBProxy started")
+	i.logger.Info().Str("duration", time.Now().Sub(startTime).String()).Msg("zbproxy started")
 	return nil
 }
 

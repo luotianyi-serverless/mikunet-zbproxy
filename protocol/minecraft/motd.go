@@ -40,7 +40,7 @@ func generateMOTD(protocolVersion uint, s *config.Outbound, onlineCount *atomic.
 			Name     string `json:"name"`
 			Protocol uint   `json:"protocol"`
 		}{
-			Name:     "ZBProxy " + version.Version,
+			Name:     "zbproxy " + version.Version,
 			Protocol: protocolVersion,
 		},
 		Players: struct {

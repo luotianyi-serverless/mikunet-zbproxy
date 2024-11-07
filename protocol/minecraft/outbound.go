@@ -79,7 +79,7 @@ func (o *Outbound) PostInitialize(router adapter.Router) error {
 		o.config.Minecraft.MotdFavicon = defaultMOTD
 	}
 	o.config.Minecraft.MotdDescription = strings.NewReplacer(
-		"{INFO}", "ZBProxy "+version.Version,
+		"{INFO}", "zbproxy "+version.Version,
 		"{NAME}", o.config.Name,
 		"{HOST}", o.config.TargetAddress,
 		"{PORT}", strconv.Itoa(int(o.config.TargetPort)),
@@ -102,7 +102,7 @@ func (o *Outbound) PostInitialize(router adapter.Router) error {
 			var u [16]byte
 			var dst [36]byte
 			for i, sample := range samples {
-				// generate random UUID with ZBProxy signature
+				// generate random UUID with zbproxy signature
 				fastrand.Read(u[:])
 				u[0] = byte(i)
 				u[1] = '$'

@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/layou233/zbproxy/v3/common"
-	"github.com/layou233/zbproxy/v3/common/jsonx"
 	"os"
 	"time"
+
+	"github.com/layou233/zbproxy/v3/common"
+	"github.com/layou233/zbproxy/v3/common/jsonx"
 
 	"github.com/layou233/zbproxy/v3/common/set"
 
@@ -172,7 +173,7 @@ func LoadConfigFromFile(ctx context.Context, filePath string, watch bool, logger
 				Lists: map[string]set.StringSet{},
 			}
 			var file *os.File
-			file, err = os.Create("ZBProxy.json")
+			file, err = os.Create("zbproxy.json")
 			if err != nil {
 				return nil, common.Cause("create config file: ", err)
 			}

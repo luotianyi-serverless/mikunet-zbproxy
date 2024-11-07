@@ -1,4 +1,4 @@
-// Package network contains all protocols for remote connection used by ZBProxy.
+// Package network contains all protocols for remote connection used by zbproxy.
 //
 // To implement an outbound protocol, one needs to do the following:
 // 1. Implement the interface(s) below.

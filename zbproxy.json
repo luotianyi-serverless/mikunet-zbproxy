@@ -1,0 +1,13 @@
+{
+    "Log": {
+        "Level": "info"
+    },
+    "Services": [
+        {
+            "Name": "VCMCS",
+            "Listen": 25565,
+            "TargetPort": 25565,
+            "TargetAddress": "mc-app-us.mikunet.me"
+        }
+    ]
+}
