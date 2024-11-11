@@ -1,7 +1,7 @@
 {
     "Services": [
         {
-            "Name": "VCMCS-Proxy",
+            "Name": "default-service",
             "Listen": 25565
         }
     ],
@@ -11,21 +11,21 @@
             {
                 "Type": "always",
                 "Sniff": "all",
-                "Outbound": "VCMCS-Server-US"
+                "Outbound": "default-outbound"
             }
         ]
     },
     "Outbounds": [
         {
-            "Name": "VCMCS-Server-US",
-            "TargetAddress": "FILL-BACKEND-SERVER-ADDRESS",
+            "Name": "default-outbound",
+            "TargetAddress": "minecraft.example.net",
             "TargetPort": 25565,
             "Minecraft": {
                 "OnlineCount": {
                     "Max": 7120,
                     "Online": -1
                 },
-                "MotdDescription": "§9VCMCS §6§o4th §7§r- §a§nCN2加速§r §3ZBP/{VERSION}"
+                "MotdDescription": "§3zbproxy/{VERSION}"
             }
         }
     ],
